@@ -1,4 +1,4 @@
-# Xperience by Kentico: Content Model Graph
+# Xperience by Kentico Labs: Content Model Graph
 
 [![Kentico Labs](https://img.shields.io/badge/Kentico_Labs-grey?labelColor=orange)](https://github.com/Kentico)
 [![CI](https://github.com/Kentico/xperience-by-kentico-labs-content-model-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/Kentico/xperience-by-kentico-labs-content-model-graph/actions/workflows/ci.yml)
