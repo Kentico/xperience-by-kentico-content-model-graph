@@ -1,0 +1,342 @@
+﻿/*# Checkout process inputs #*/
+.checkout-container input[type="text"],
+.checkout-container input[type="number"],
+.checkout-container input[type="email"],
+.checkout-container input[type="tel"],
+.checkout-container select {
+    width: 100%;
+    height: 2.6rem;
+    margin-top: 0.25rem;
+    padding-left: 0.4rem;
+    padding-right: 0;
+    border: 2px solid @color-border;
+}
+
+.checkout-container input[type="checkbox"] {
+    height: 1rem;
+    width: 1rem;
+    margin-right: 0.15rem;
+    vertical-align: middle;
+}
+
+.checkout-container hr {
+    border: 0;
+    background-color: #ddd;
+    height: 1px;
+    margin-top: 0.625rem;
+    margin-bottom: 0.625rem;
+    clear: both;
+}
+
+.checkout-container select:disabled {
+    background: #AAAAAA;
+}
+
+.checkout-top-header {
+    background: @color-sale;
+    padding: 0.8125rem 0px;
+    color: @color-white;
+}
+
+/*# Checkout process forms #*/
+.checkout-container .customer-details h4:first-of-type, .checkout-container .gray-box {
+    margin-top: 1rem;
+}
+
+.checkout-container .editing-form-label-cell, .delivery-label {
+    font-weight: bold;
+}
+
+.checkout-container .gray-box {
+    background-color: @color-darkbrownbg;
+    padding: 1rem;
+}
+
+.checkout-container h4 {
+    font-size: 2rem;
+}
+
+.checkout-back-link {
+    cursor: pointer;
+}
+
+.checkout-container .checkbox {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.checkout-container .explanation-text {
+    color: #989898;
+}
+
+.checkout-container .payment-selector {
+    margin-bottom: 0.625rem;
+}
+
+.floating-box.fixed {
+    position: fixed;
+    margin-top: 0rem;
+    top: 1rem;
+}
+
+/*# Shopping cart content step #*/
+.cart-item-image {
+    float: left;
+    margin-right: 1.25rem;
+    height: 70px;
+    width: 70px;
+
+    img {
+        max-height: 70px;
+        max-width: 70px;
+    }
+}
+
+.cart-item-amount {
+    padding-bottom: 14px;
+    min-height: 3.5rem;
+
+    input {
+        margin-right: 0.25rem;
+    }
+
+    .btn {
+        padding: 0.35rem 1rem;
+    }
+}
+
+.cart-item-amount input[type="text"],
+.cart-item-amount input[type="number"] {
+    width: 3rem;
+    float: left;
+    text-align: center;
+    margin-top: 0;
+    border: 2px solid @color-border;
+}
+
+.cart-item-amount input[type="submit"] {
+    padding: 0 .425rem;
+    height: 2.6rem;
+}
+
+.cart-item-amount > div {
+    width: 7.7rem;
+    float: left;
+}
+
+.cart-item-amount > span {
+    padding-top: 0.5rem;
+    margin-right: 0.5rem;
+    font-size: 1rem;
+    float: left;
+}
+
+.cart-item-info {
+    padding-bottom: 1.25rem;
+}
+
+.cart-item-info > a {
+    color: @color-black;
+    text-decoration: none;
+    font-size: 1.125rem;
+    font-weight: bold;
+}
+
+.cart-item-info span.bold {
+    white-space: nowrap;
+}
+
+.cart-item-subtotal {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    font-size: 1.125rem;
+    font-weight: bold;
+}
+
+.cart-item-subtotal--discounted {
+    color: @color-red;
+    margin-left: 0.75rem;
+}
+
+.cart-item-subtotal--original {
+    font-weight: 100;
+    font-size: 0.75rem;
+    text-decoration: line-through;
+    margin-left: 0.75rem;
+}
+
+.cart-item-option {
+    margin-left: 70px;
+    padding-left: 1.25rem;
+    font-size: 1rem;
+}
+
+.cart .bold {
+    font-weight: bold;
+}
+
+.cart-item-discount-info {
+    background-color: @color-gray-155;
+    padding: 8px 10px;
+    display: inline-block;
+    margin-top: 8px;
+}
+
+.cart-item-discount-names {
+    list-style-type: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+.btn.checkout-button {
+    width: 100%;
+    text-align: center;
+}
+
+.cart-coupon-input input[type="text"] {
+    float: left;
+    margin-right: 0.5rem;
+    width: 69%;
+    clear: both;
+    margin-top: 0;
+}
+
+.cart-coupon-input .btn {
+    height: 2.6rem;
+    padding: 0;
+    width: 27%;
+    clear: both;
+}
+
+.cart-coupon-input > label {
+    font-size: 1.125rem;
+    font-weight: bold;
+}
+
+.cart-coupon-input > div {
+    margin-top: 0.625rem;
+}
+
+.cart-coupon-input .cart-coupon-code {
+    clear: both;
+    float: left;
+    width: 100%;
+}
+
+.cart-coupon-input .cart-coupon-code .label {
+    float: left;
+    padding-top: 0.5em;
+}
+
+.cart-coupon-input .cart-coupon-code .button {
+    text-align: right;
+}
+
+.cart-coupon-input .cart-coupon-code input[type="submit"] {
+    background-color: inherit;
+    border: none;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.cart-item-viewer {
+    margin-bottom: 0.375rem;
+}
+
+.cart-item-viewer {
+    .label {
+        float: left;
+    }
+
+    .value {
+        text-align: right;
+    }
+
+    .previous-price {
+        text-decoration: line-through;
+    }
+}
+
+.cart-total-viewer {
+    font-size: 1rem;
+    .summary-title {
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+
+    .label {
+        float: left;
+    }
+
+     .value {
+        text-align: right;
+    }
+}
+
+.cart-total .cart-total-viewer {
+    margin-bottom: 1.25rem;
+    font-size: 1.125rem;
+}
+
+.cart-total .cart-grand-total {
+    margin-top: 1rem;
+    font-weight: bold;
+}
+
+.cart-coupon-info-label {
+    font-size: 0.9rem;
+    float: left;
+}
+
+.cart-right-panel {
+    background-color: @color-brownbg;
+    padding: 1.25rem;
+}
+
+.cart > h1 {
+    margin-bottom: 1.25rem;
+}
+
+@media (min-width: 768px) {
+    .cart .cart-content {
+        padding-right: 1.25rem;
+    }
+}
+
+.cart .last-separator {
+    margin-bottom: 0;
+}
+
+.cart .first-separator {
+    margin-top: 0;
+}
+
+.free-shipping-promotion {
+    margin-top: 1rem;
+    margin-bottom: 1.25rem;
+    padding: 1rem;
+    background-color: @color-gold;
+    color: @color-white;
+    font-size: 1.375rem;
+    font-family: 'pt serif';
+    line-height: 1.4em;
+}
+
+/*# Delivery details #*/
+.delivery-details {
+    padding: 3rem 1rem;
+
+    .customer-details label {
+        font-weight: 400;
+    }
+}
+
+@media (min-width: 768px) {
+    .delivery-details {
+        padding: 3rem;
+        background: url(../Images/cup.png) right 18rem no-repeat;
+    }
+}

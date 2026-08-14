@@ -1,0 +1,20 @@
+@{
+    ViewBag.Title = HtmlLocalizer["Access denied"].Value;
+    ViewData["PageClass"] = "inverted";
+}
+
+<div class="row">
+    <div class="access-denied">
+        <div class="col-md-5 col-lg-4 col-lg-offset-1 sm-hidden xs-hidden">
+            <img class="img-responsive" alt="Access denied" src="~/Content/Images/404.jpg">
+        </div>
+        <div class="col-md-7 col-lg-6">
+            <div class="access-denied-content">
+                <h2>
+                    @HtmlLocalizer["Access denied"]
+                </h2>
+                <p>@HtmlLocalizer["You do not have permission to view this page."]</p>
+            </div>
+        </div>
+    </div>
+</div>

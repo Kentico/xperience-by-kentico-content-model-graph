@@ -1,0 +1,45 @@
+﻿@using CMS.Commerce
+@using DancingGoat.Commerce
+@using DancingGoat.Models
+
+@model CheckoutViewModel
+
+<div class="cart-total">
+    <div class="cart-total-viewer">
+        <div class="summary-title">
+            <span>@HtmlLocalizer["Order summary"]</span>
+        </div>
+        <div class="cart-item-viewer">
+            <div class="label">
+                <span>@HtmlLocalizer["Cart total"]</span>
+            </div>
+            <div class="value">
+                <price>@Model.ShoppingCart.SubtotalPrice</price>
+            </div>
+        </div>
+        <div class="cart-item-viewer">
+            <div class="label">
+                <span>@HtmlLocalizer["Shipping"]</span>
+            </div>
+            <div class="value">
+                <price>@Model.PaymentShipping.ShippingPrice</price>
+            </div>
+        </div>
+        <div class="cart-item-viewer">
+            <div class="label">
+                <span>@HtmlLocalizer["Tax"]</span>
+            </div>
+            <div class="value">
+                <price>@Model.ShoppingCart.TotalTax</price>
+            </div>
+        </div>
+        <div class="cart-grand-total">
+            <div class="label">
+                <span>@HtmlLocalizer["Total amount"]</span>
+            </div>
+            <div class="value">
+                <price>@Model.ShoppingCart.TotalPrice</price>
+            </div>
+        </div>
+    </div>
+</div>

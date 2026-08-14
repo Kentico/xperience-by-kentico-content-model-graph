@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Title>Xperience by Kentico: Content Model Graph</Title>
+    <Description>Visualizes Xperience content types, reusable field schemas, taxonomies, forms, and object type relationships in the administration.</Description>
+    <AdminOrgName>kentico</AdminOrgName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Requires that npm run build or npm run build:dev was executed before the Debug .NET build. -->
+    <AdminClientPath Include="Client\dist\**" Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+      <ProjectName>xperience-labs-content-model-graph</ProjectName>
+    </AdminClientPath>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Client\node_modules\**" />
+    <EmbeddedResource Remove="Client\node_modules\**" />
+    <None Remove="Client\node_modules\**" />
+  </ItemGroup>
+
+  <Target Name="NpmInstall" BeforeTargets="NpmBuildClient" Condition=" '$(Configuration)|$(Platform)' != 'Debug|AnyCPU' ">
+    <Exec Command="npm ci --no-audit --no-fund" WorkingDirectory="$(MSBuildProjectDirectory)\Client" />
+  </Target>
+
+  <Target Name="NpmBuildClient" BeforeTargets="BeforeBuild" Condition=" '$(Configuration)|$(Platform)' != 'Debug|AnyCPU' ">
+    <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)\Client" />
+
+    <ItemGroup>
+      <AdminClientPath Include="Client\dist\**">
+        <ProjectName>xperience-labs-content-model-graph</ProjectName>
+      </AdminClientPath>
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Kentico.Xperience.Admin" />
+  </ItemGroup>
+
+</Project>

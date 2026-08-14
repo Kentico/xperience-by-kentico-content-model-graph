@@ -31,7 +31,7 @@ stages:
             value: true
 
           - name: slnPath
-            value: src/Kentico.Xperience.RepoTemplate.Libs.slnx
+            value: src/Kentico.Xperience.Labs.ContentModelGraph.Libs.slnx
 
         steps:
           - task: UseDotNet@2
@@ -43,7 +43,7 @@ stages:
             inputs:
               targetType: inline
               script: |
-                $fileContent = Get-Content -Path 'src/Kentico.Xperience.RepoTemplate.Admin/Client/package.json' -Raw
+                $fileContent = Get-Content -Path 'src/Kentico.Xperience.Labs.ContentModelGraph/Client/package.json' -Raw
                 $jsonObject = ConvertFrom-Json -InputObject $fileContent
 
                 # Get the value of engines.node
@@ -91,47 +91,50 @@ stages:
               # Roll-forward behavior set for AzureSignTool dotnet tool (see .config\dotnet-tools.json) which requires .Net 6.0 runtime
               DOTNET_ROLL_FORWARD: Major
 
+          - task: Npm@1
+            displayName: Type-check Admin client
+            inputs:
+              command: custom
+              customCommand: run typecheck
+              workingDir: src/Kentico.Xperience.Labs.ContentModelGraph/Client
+
           - template: steps.yml
             parameters:
               Configuration: $(Configuration)
               artifacts:
                 - Core:
-                  artifactName: "Kentico-Xperience-RepoTemplate"
-                  projectPath: "src/Kentico.Xperience.RepoTemplate"
-                - Admin:
-                  artifactName: "Kentico-Xperience-RepoTemplate-Admin"
-                  projectPath: "src/Kentico.Xperience.RepoTemplate.Admin"
+                  artifactName: "Kentico.Xperience.Labs.ContentModelGraph"
+                  projectPath: "src/Kentico.Xperience.Labs.ContentModelGraph"
 
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-      - stage: PublishNuGetPackages
+  - stage: PublishNuGetPackages
+    displayName: Publish NuGet packages
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+
+    jobs:
+      - deployment: PublishNuGetPackages
         displayName: Publish NuGet packages
-        dependsOn: Build
 
-        jobs:
-          - deployment: PublishNuGetPackages
-            displayName: Publish NuGet packages
+        environment: integrations-release-nuget
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: none
 
-            environment: integrations-release-nuget
-            strategy:
-              runOnce:
-                deploy:
-                  steps:
-                    - checkout: none
+                - task: NuGetToolInstaller@1
+                  displayName: Install latest nuget.exe
+                  inputs:
+                    versionSpec: ">=5.6"
+                    checkLatest: true
 
-                    - task: NuGetToolInstaller@1
-                      displayName: Install latest nuget.exe
-                      inputs:
-                        versionSpec: ">=5.6"
-                        checkLatest: true
+                - task: NuGetAuthenticate@1
+                  displayName: NuGet Authenticate
 
-                    - task: NuGetAuthenticate@1
-                      displayName: NuGet Authenticate
-
-                    - task: NuGetCommand@2
-                      displayName: NuGet push
-                      inputs:
-                        command: push
-                        packagesToPush: $(Pipeline.Workspace)/**/*.nupkg
-                        nuGetFeedType: external
-                        publishFeedCredentials: nuget.org
-                        allowPackageConflicts: true
+                - task: NuGetCommand@2
+                  displayName: NuGet push
+                  inputs:
+                    command: push
+                    packagesToPush: $(Pipeline.Workspace)/**/*.nupkg
+                    nuGetFeedType: external
+                    publishFeedCredentials: nuget.org

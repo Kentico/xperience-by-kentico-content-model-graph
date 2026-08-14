@@ -1,0 +1,114 @@
+﻿@using CMS.Commerce
+@using DancingGoat.Commerce
+@using DancingGoat.Models
+@using Kentico.Content.Web.Mvc.Routing
+
+@inject IPreferredLanguageRetriever currentLanguageRetriever
+
+@model ShoppingCartViewModel
+
+@{
+    var languageName = currentLanguageRetriever.Get();
+    var routeData = new Dictionary<string, string> { { "languageName", languageName } };
+}
+
+@foreach (var cartItem in Model.Items)
+{
+    <div class="row">
+        <div class="col-md-10">
+            @if (!string.IsNullOrEmpty(cartItem.ImageUrl))
+            {
+                <div class="cart-item-image">
+                    <a href="@cartItem.DetailUrl">
+                        <img src="@cartItem.ImageUrl" alt="@cartItem.Name" title="@cartItem.Name" />
+                    </a>
+                </div>
+            }
+            <div class="cart-item-info">
+                <a href="@cartItem.DetailUrl">
+                    @cartItem.Name
+                </a>
+            </div>
+            <form asp-action="HandleUpdateRemove" asp-controller="DancingGoatShoppingCart" asp-all-route-data="@routeData" method="post">
+                <div class="cart-item-amount">
+                    <span>Qty</span>
+                    <input type="hidden" name="contentItemId" value="@cartItem.ContentItemId" />
+                    <input type="hidden" name="variantId" value="@cartItem.VariantId" />
+                    <input type="number" name="quantity" value="@cartItem.Quantity" class="form-control" size="2" min="1" max="1000" />
+                    <button class="btn btn-default" name="action" value="@DancingGoatShoppingCartController.UPDATE_ITEM_QUANTITY">@HtmlLocalizer["Update"]</button>
+                    <button class="btn btn-default" name="action" value="@DancingGoatShoppingCartController.REMOVE_ITEM">@HtmlLocalizer["Remove"]</button>
+                </div>
+            </form>
+
+            @Html.ValidationMessage(cartItem.ContentItemId.ToString(), new { @class = "red"})
+        </div>
+        <div class="col-md-2 cart-item-subtotal">
+            @if (cartItem.ListPrice > cartItem.TotalPrice && cartItem.AppliedPromotion is not null)
+            {
+                <span class="cart-item-subtotal--original">
+                    <price>@(cartItem.ListPrice)</price>
+                </span>
+                <span class="cart-item-subtotal--discounted">
+                    <price>@cartItem.TotalPrice</price>
+                </span>
+            }
+            else
+            {
+                <price>@cartItem.TotalPrice</price>
+            }
+        </div>
+    </div>
+    <hr />
+}
+
+@if (Model.OrderDiscountText != null)
+{
+    <div class="cart-order-promotion">
+        @Model.OrderDiscountText
+    </div>
+}
+
+@if (Model.CouponCodes.Any())
+{
+    <h3 class="cart-coupons-title">@HtmlLocalizer["Your promo/discount codes"]</h3>
+    foreach (var coupon in Model.CouponCodes)
+    {
+        <div class="row">
+            <form asp-controller="DancingGoatShoppingCart" asp-action="HandleCouponCode" method="post" asp-all-route-data="@routeData">
+                <input type="hidden" name="couponCode" value="@coupon.Code" />
+                <div class="cart-coupons">
+                    <div class="cart-coupon-value">@coupon.Code</div>
+                    <div class="cart-coupon-message">
+                        @(coupon.Status switch
+                        {
+                            CouponCodeStatus.Applied => HtmlLocalizer["Applied."],
+                            CouponCodeStatus.Applicable => HtmlLocalizer["Not applied, higher discount active."],
+                            CouponCodeStatus.NotApplicable => HtmlLocalizer["Not applied, conditions are not met."],
+                            _ => HtmlLocalizer["Unknown coupon status."]
+                        })
+                    </div>
+                    <button class="cart-coupon-remove btn" name="action" value="@DancingGoatShoppingCartController.REMOVE_COUPON_CODE">
+                        <span class="icon icon-modal-close"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    }
+}
+
+<div class="row cart-promotion-code cart-promotion-code--collapsed">
+    <span class="cart-promotion-toggle" onclick="this.closest('.cart-promotion-code').className = 'cart-promotion-code';">
+        @HtmlLocalizer["Apply promo/discount code"]
+        <span class="icon icon-chevron-down" style="display:inline-block;"></span>
+    </span>
+    <form asp-controller="DancingGoatShoppingCart" asp-action="HandleCouponCode" method="post" asp-all-route-data="@routeData">
+        <div class="cart-promotion-code-form">
+            <div class="cart-promotion-code-value">
+                <input type="text" name="couponCode" class="cart-promotion-code-input" placeholder="@HtmlLocalizer["Promo/discount code"]" />
+            </div>
+            <div class="cart-promotion-code-button">
+                <button name="action" class="btn btn-default" value="@DancingGoatShoppingCartController.ADD_COUPON_CODE">@HtmlLocalizer["Apply"]</button>
+            </div>
+        </div>
+    </form>
+</div>

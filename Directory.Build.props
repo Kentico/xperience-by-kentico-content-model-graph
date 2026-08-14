@@ -9,8 +9,8 @@
     <VersionSuffix>prerelease-1</VersionSuffix>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
-    <PackageProjectUrl>https://github.com/Kentico/REPOSITORY_NAME</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/Kentico/REPOSITORY_NAME/releases</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/Kentico/xperience-by-kentico-labs-content-model-graph</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/Kentico/xperience-by-kentico-labs-content-model-graph/releases</PackageReleaseNotes>
     <PackageIcon>logo.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>xperience;kentico;aspnetcore</PackageTags>
@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <WarningsAsErrors>nullable</WarningsAsErrors>
@@ -30,7 +30,7 @@
     <CopyDocumentationFilesFromPackages>true</CopyDocumentationFilesFromPackages>
     <CopyDebugSymbolFilesFromPackages>true</CopyDebugSymbolFilesFromPackages>
     <NoWarn>$(NoWarn);1591</NoWarn>
-    <RootNamespace>Kentico.Xperience.RepoTemplate</RootNamespace>
+    <RootNamespace>Kentico.Xperience.Labs.ContentModelGraph</RootNamespace>
 
     <!-- Set to false to manually control embedded assets in the assembly -->
     <!-- This can impact things like embedded localization .resx files -->
