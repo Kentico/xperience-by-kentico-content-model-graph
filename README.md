@@ -1,7 +1,7 @@
-# Xperience by Kentico Labs: Content Model Graph
+# Xperience by Kentico: Content Model Graph
 
 [![Kentico Labs](https://img.shields.io/badge/Kentico_Labs-grey?labelColor=orange)](https://github.com/Kentico)
-[![CI](https://github.com/Kentico/xperience-by-kentico-labs-content-model-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/Kentico/xperience-by-kentico-labs-content-model-graph/actions/workflows/ci.yml)
+[![CI](https://github.com/Kentico/xperience-by-kentico-content-model-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/Kentico/xperience-by-kentico-content-model-graph/actions/workflows/ci.yml)
 
 ## Description
 
@@ -18,20 +18,20 @@ The graph is generated from Xperience metadata. It does not inspect application 
 
 ### Screenshots
 
-<a href="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-labs-content-model-graph/refs/heads/main/docs/images/dancing-goat-content-model-graph.jpg">
-  <img src="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-labs-content-model-graph/refs/heads/main/docs/images/dancing-goat-content-model-graph.jpg" width="800" alt="Dancing Goat content model graph in the Xperience administration">
+<a href="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-content-model-graph/refs/heads/main/docs/images/dancing-goat-content-model-graph.jpg">
+  <img src="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-content-model-graph/refs/heads/main/docs/images/dancing-goat-content-model-graph.jpg" width="800" alt="Dancing Goat content model graph in the Xperience administration">
 </a>
 
-<a href="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-labs-content-model-graph/refs/heads/main/docs/images/xperience-by-kentico-commerce-model-graph.jpg">
-  <img src="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-labs-content-model-graph/refs/heads/main/docs/images/xperience-by-kentico-commerce-model-graph.jpg" width="800" alt="Xperience by Kentico commerce model graph in the Xperience administration">
+<a href="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-content-model-graph/refs/heads/main/docs/images/xperience-by-kentico-commerce-model-graph.jpg">
+  <img src="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-content-model-graph/refs/heads/main/docs/images/xperience-by-kentico-commerce-model-graph.jpg" width="800" alt="Xperience by Kentico commerce model graph in the Xperience administration">
 </a>
 
 ### Videos
 
 Watch and see how you can use this library to explore the entire data model of your Xperience by Kentico project.
 
-<a href="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-labs-content-model-graph/refs/heads/main/docs/images/xperience-by-kentico-labs-content-model-graph-exploration.webm">
-  <img src="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-labs-content-model-graph/refs/heads/main/docs/images/xperience-by-kentico-labs-content-model-graph-exploration.png" width="800" alt="Content Model Graph exploration demonstration">
+<a href="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-content-model-graph/refs/heads/main/docs/images/xperience-by-kentico-content-model-graph-exploration.webm">
+  <img src="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-content-model-graph/refs/heads/main/docs/images/xperience-by-kentico-content-model-graph-exploration.png" width="800" alt="Content Model Graph exploration demonstration">
 </a>
 
 ## Requirements
@@ -46,7 +46,7 @@ Watch and see how you can use this library to explore the entire data model of y
 ## Package Installation
 
 ```powershell
-dotnet add package Kentico.Xperience.Labs.ContentModelGraph --version 1.0.0-prerelease-1
+dotnet add package Kentico.Xperience.ContentModelGraph --version 1.0.0-prerelease-1
 ```
 
 ## Quick Start
@@ -54,7 +54,7 @@ dotnet add package Kentico.Xperience.Labs.ContentModelGraph --version 1.0.0-prer
 Register the graph builder before building the application:
 
 ```csharp
-using Kentico.Xperience.Labs.ContentModelGraph;
+using Kentico.Xperience.ContentModelGraph;
 
 builder.Services.AddContentModelGraph();
 ```

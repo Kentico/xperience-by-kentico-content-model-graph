@@ -12,7 +12,7 @@
   <ItemGroup>
     <!-- Requires that npm run build or npm run build:dev was executed before the Debug .NET build. -->
     <AdminClientPath Include="Client\dist\**" Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-      <ProjectName>xperience-labs-content-model-graph</ProjectName>
+      <ProjectName>xperience-content-model-graph</ProjectName>
     </AdminClientPath>
   </ItemGroup>
 
@@ -31,7 +31,7 @@
 
     <ItemGroup>
       <AdminClientPath Include="Client\dist\**">
-        <ProjectName>xperience-labs-content-model-graph</ProjectName>
+        <ProjectName>xperience-content-model-graph</ProjectName>
       </AdminClientPath>
     </ItemGroup>
   </Target>

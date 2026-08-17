@@ -31,7 +31,7 @@ stages:
             value: true
 
           - name: slnPath
-            value: src/Kentico.Xperience.Labs.ContentModelGraph.Libs.slnx
+            value: src/Kentico.Xperience.ContentModelGraph.Libs.slnx
 
         steps:
           - task: UseDotNet@2
@@ -43,7 +43,7 @@ stages:
             inputs:
               targetType: inline
               script: |
-                $fileContent = Get-Content -Path 'src/Kentico.Xperience.Labs.ContentModelGraph/Client/package.json' -Raw
+                $fileContent = Get-Content -Path 'src/Kentico.Xperience.ContentModelGraph/Client/package.json' -Raw
                 $jsonObject = ConvertFrom-Json -InputObject $fileContent
 
                 # Get the value of engines.node
@@ -96,15 +96,15 @@ stages:
             inputs:
               command: custom
               customCommand: run typecheck
-              workingDir: src/Kentico.Xperience.Labs.ContentModelGraph/Client
+              workingDir: src/Kentico.Xperience.ContentModelGraph/Client
 
           - template: steps.yml
             parameters:
               Configuration: $(Configuration)
               artifacts:
                 - Core:
-                  artifactName: "Kentico.Xperience.Labs.ContentModelGraph"
-                  projectPath: "src/Kentico.Xperience.Labs.ContentModelGraph"
+                  artifactName: "Kentico.Xperience.ContentModelGraph"
+                  projectPath: "src/Kentico.Xperience.ContentModelGraph"
 
   - stage: PublishNuGetPackages
     displayName: Publish NuGet packages

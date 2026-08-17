@@ -20,7 +20,7 @@ jobs:
           global-json-file: global.json
 
       - name: Run dotnet format
-        run: dotnet format Kentico.Xperience.Labs.ContentModelGraph.slnx --exclude ./examples/** --verify-no-changes
+        run: dotnet format Kentico.Xperience.ContentModelGraph.slnx --exclude ./examples/** --verify-no-changes
 
   build_and_test:
     name: Build and Test
@@ -49,7 +49,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: src/Kentico.Xperience.Labs.ContentModelGraph/Client/package-lock.json
+          cache-dependency-path: src/Kentico.Xperience.ContentModelGraph/Client/package-lock.json
 
       - name: Install dependencies
         run: |
@@ -63,7 +63,7 @@ jobs:
             --no-restore
 
       - name: Type-check Admin client
-        working-directory: src/Kentico.Xperience.Labs.ContentModelGraph/Client
+        working-directory: src/Kentico.Xperience.ContentModelGraph/Client
         run: npm run typecheck
 
       - name: Test Solution

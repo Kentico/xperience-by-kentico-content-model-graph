@@ -6,23 +6,23 @@ using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.Admin.Base.UIPages;
 
 [assembly: UIApplication(
-    identifier: Kentico.Xperience.Labs.ContentModelGraph.ContentModelGraphPage.IDENTIFIER,
-    type: typeof(Kentico.Xperience.Labs.ContentModelGraph.ContentModelGraphPage),
+    identifier: Kentico.Xperience.ContentModelGraph.ContentModelGraphPage.IDENTIFIER,
+    type: typeof(Kentico.Xperience.ContentModelGraph.ContentModelGraphPage),
     slug: "content-model-graph",
     name: "Content model graph",
     category: BaseApplicationCategories.DEVELOPMENT,
     icon: Icons.CustomElement,
-    templateName: "@kentico/xperience-labs-content-model-graph/ContentModelGraph")]
+    templateName: "@kentico/xperience-content-model-graph/ContentModelGraph")]
 
-namespace Kentico.Xperience.Labs.ContentModelGraph;
+namespace Kentico.Xperience.ContentModelGraph;
 
 internal sealed class ContentModelGraphPage(
     IProgressiveCache progressiveCache,
     IContentModelGraphBuilder builder) : Page<ContentModelGraphClientProperties>
 {
-    public const string IDENTIFIER = "Kentico.Xperience.Labs.ContentModelGraph.Admin.App";
+    public const string IDENTIFIER = "Kentico.Xperience.ContentModelGraph.Admin.App";
 
-    private const string CACHE_KEY = "kentico|xperience|labs|contentmodelgraph";
+    private const string CACHE_KEY = "kentico|xperience|contentmodelgraph";
     private const int CACHE_MINUTES = 60;
 
     public override async Task<ContentModelGraphClientProperties> ConfigureTemplateProperties(ContentModelGraphClientProperties properties)

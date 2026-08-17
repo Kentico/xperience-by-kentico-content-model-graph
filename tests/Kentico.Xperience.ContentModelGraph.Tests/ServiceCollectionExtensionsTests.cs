@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Kentico.Xperience.Labs.ContentModelGraph.Tests;
+namespace Kentico.Xperience.ContentModelGraph.Tests;
 
 public class ServiceCollectionExtensionsTests
 {

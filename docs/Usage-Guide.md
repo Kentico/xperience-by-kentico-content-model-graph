@@ -5,13 +5,13 @@
 Add the package to the Xperience ASP.NET Core application:
 
 ```powershell
-dotnet add package Kentico.Xperience.Labs.ContentModelGraph --version 1.0.0-prerelease-1
+dotnet add package Kentico.Xperience.ContentModelGraph --version 1.0.0-prerelease-1
 ```
 
 Register the library services in `Program.cs` before `builder.Build()`:
 
 ```csharp
-using Kentico.Xperience.Labs.ContentModelGraph;
+using Kentico.Xperience.ContentModelGraph;
 
 builder.Services.AddContentModelGraph();
 ```
@@ -43,8 +43,8 @@ Graph data is cached for 60 minutes. **Clear cache** invalidates the shared cach
 Install dependencies and run the development server:
 
 ```powershell
-npm install --prefix .\src\Kentico.Xperience.Labs.ContentModelGraph\Client
-npm run start --prefix .\src\Kentico.Xperience.Labs.ContentModelGraph\Client
+npm install --prefix .\src\Kentico.Xperience.ContentModelGraph\Client
+npm run start --prefix .\src\Kentico.Xperience.ContentModelGraph\Client
 ```
 
 Configure the host application's user secrets:
@@ -52,7 +52,7 @@ Configure the host application's user secrets:
 ```json
 {
   "CMSAdminClientModuleSettings": {
-    "kentico-xperience-labs-content-model-graph": {
+    "kentico-xperience-content-model-graph": {
       "Mode": "Proxy",
       "Port": 3009
     }
@@ -65,7 +65,7 @@ For normal builds and deployments, use embedded mode:
 ```json
 {
   "CMSAdminClientModuleSettings": {
-    "kentico-xperience-labs-content-model-graph": {
+    "kentico-xperience-content-model-graph": {
       "Mode": "Embedded"
     }
   }
@@ -75,6 +75,6 @@ For normal builds and deployments, use embedded mode:
 Build the production client before building or packing the library:
 
 ```powershell
-npm run build --prefix .\src\Kentico.Xperience.Labs.ContentModelGraph\Client
-dotnet build .\Kentico.Xperience.Labs.ContentModelGraph.slnx
+npm run build --prefix .\src\Kentico.Xperience.ContentModelGraph\Client
+dotnet build .\Kentico.Xperience.ContentModelGraph.slnx
 ```

@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Kentico.Xperience.Labs.ContentModelGraph\Kentico.Xperience.Labs.ContentModelGraph.csproj" />
+    <ProjectReference Include="..\..\src\Kentico.Xperience.ContentModelGraph\Kentico.Xperience.ContentModelGraph.csproj" />
   </ItemGroup>
 
 </Project>

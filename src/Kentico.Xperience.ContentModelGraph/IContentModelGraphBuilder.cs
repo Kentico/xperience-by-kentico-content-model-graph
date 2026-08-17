@@ -1,4 +1,4 @@
-namespace Kentico.Xperience.Labs.ContentModelGraph;
+namespace Kentico.Xperience.ContentModelGraph;
 
 public interface IContentModelGraphBuilder
 {

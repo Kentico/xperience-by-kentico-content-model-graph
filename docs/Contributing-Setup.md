@@ -10,11 +10,11 @@
 ## Restore and Build
 
 ```powershell
-npm install --prefix .\src\Kentico.Xperience.Labs.ContentModelGraph\Client
-npm run build --prefix .\src\Kentico.Xperience.Labs.ContentModelGraph\Client
-dotnet restore .\Kentico.Xperience.Labs.ContentModelGraph.slnx
-dotnet build .\Kentico.Xperience.Labs.ContentModelGraph.slnx --no-restore
-dotnet test .\Kentico.Xperience.Labs.ContentModelGraph.slnx --no-build --no-restore
+npm install --prefix .\src\Kentico.Xperience.ContentModelGraph\Client
+npm run build --prefix .\src\Kentico.Xperience.ContentModelGraph\Client
+dotnet restore .\Kentico.Xperience.ContentModelGraph.slnx
+dotnet build .\Kentico.Xperience.ContentModelGraph.slnx --no-restore
+dotnet test .\Kentico.Xperience.ContentModelGraph.slnx --no-build --no-restore
 ```
 
 ## DancingGoat
@@ -26,7 +26,7 @@ The example references the library project, registers `AddContentModelGraph()`, 
 Start both processes:
 
 ```powershell
-npm run start --prefix .\src\Kentico.Xperience.Labs.ContentModelGraph\Client
+npm run start --prefix .\src\Kentico.Xperience.ContentModelGraph\Client
 dotnet watch run --project .\examples\DancingGoat\DancingGoat.csproj
 ```
 
@@ -35,5 +35,5 @@ Open the administration at the URL configured in `examples/DancingGoat/Propertie
 ## Formatting
 
 ```powershell
-dotnet format .\Kentico.Xperience.Labs.ContentModelGraph.slnx --exclude .\examples\**
+dotnet format .\Kentico.Xperience.ContentModelGraph.slnx --exclude .\examples\**
 ```

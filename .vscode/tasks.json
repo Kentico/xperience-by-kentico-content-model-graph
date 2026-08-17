@@ -4,7 +4,7 @@
     {
       "type": "npm",
       "script": "install",
-      "path": "src/Kentico.Xperience.Labs.ContentModelGraph/Client",
+      "path": "src/Kentico.Xperience.ContentModelGraph/Client",
       "group": "build",
       "problemMatcher": [],
       "label": "npm: install - Admin/Client",
@@ -22,7 +22,7 @@
       "command": "dotnet",
       "args": [
         "format",
-        "Kentico.Xperience.Labs.ContentModelGraph.slnx",
+        "Kentico.Xperience.ContentModelGraph.slnx",
         "--exclude",
         "./examples/**"
       ],
@@ -40,7 +40,7 @@
     {
       "type": "npm",
       "script": "build",
-      "path": "src/Kentico.Xperience.Labs.ContentModelGraph/Client",
+      "path": "src/Kentico.Xperience.ContentModelGraph/Client",
       "group": "build",
       "problemMatcher": [],
       "label": "npm: build - Admin/Client",
@@ -49,7 +49,7 @@
     {
       "type": "npm",
       "script": "build:dev",
-      "path": "src/Kentico.Xperience.Labs.ContentModelGraph/Client",
+      "path": "src/Kentico.Xperience.ContentModelGraph/Client",
       "group": "build",
       "problemMatcher": [],
       "label": "npm: build:dev - Admin/Client",
@@ -58,7 +58,7 @@
     {
       "type": "npm",
       "script": "start",
-      "path": "src/Kentico.Xperience.Labs.ContentModelGraph/Client",
+      "path": "src/Kentico.Xperience.ContentModelGraph/Client",
       "problemMatcher": [],
       "label": "npm: watch - Admin/Client",
       "detail": "webpack serve --mode development"

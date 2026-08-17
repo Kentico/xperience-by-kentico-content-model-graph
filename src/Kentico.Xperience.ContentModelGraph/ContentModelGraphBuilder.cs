@@ -6,7 +6,7 @@ using CMS.DataEngine;
 using CMS.FormEngine;
 using CMS.Modules;
 
-namespace Kentico.Xperience.Labs.ContentModelGraph;
+namespace Kentico.Xperience.ContentModelGraph;
 
 public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonomyInfoProvider) : IContentModelGraphBuilder
 {
