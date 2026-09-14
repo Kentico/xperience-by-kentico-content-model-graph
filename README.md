@@ -14,6 +14,8 @@ Content Model Graph adds an interactive application to the Xperience by Kentico 
 
 The graph supports filtering, search highlighting, horizontal and vertical layouts, field-name labels, JSON export, and cache refresh.
 
+The package also adds a **Content relationships** page to each content item. This page shows which items reference the current item and which items the current item references.
+
 The graph is generated from Xperience metadata. It does not inspect application code or external data sources. Graph data is cached for 60 minutes and can be refreshed from the application toolbar.
 
 ### Screenshots
@@ -24,6 +26,10 @@ The graph is generated from Xperience metadata. It does not inspect application 
 
 <a href="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-content-model-graph/refs/heads/main/docs/images/xperience-by-kentico-commerce-model-graph.jpg">
   <img src="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-content-model-graph/refs/heads/main/docs/images/xperience-by-kentico-commerce-model-graph.jpg" width="800" alt="Xperience by Kentico commerce model graph in the Xperience administration">
+</a>
+
+<a href="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-content-model-graph/refs/heads/main/docs/images/dancing-goat-content-item-graph.jpg">
+  <img src="https://raw.githubusercontent.com/Kentico/xperience-by-kentico-content-model-graph/refs/heads/main/docs/images/dancing-goat-content-item-graph.jpg" width="800" alt="Content relationships page for a Dancing Goat content item in the Xperience administration">
 </a>
 
 ### Videos
