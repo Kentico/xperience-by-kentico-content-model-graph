@@ -4,28 +4,28 @@ namespace Kentico.Xperience.ContentModelGraph.Tests;
 
 public class RelationshipFieldMatcherTests
 {
-    private static readonly Guid Identifier = Guid.Parse("24bf2c50-06ab-4a58-af52-b7942aa9059b");
+    private static readonly Guid identifier = Guid.Parse("24bf2c50-06ab-4a58-af52-b7942aa9059b");
 
     [TestCase("Identifier")]
     [TestCase("identifier")]
     [TestCase("IDENTIFIER")]
     public void ReadIdentifiers_ContentItemPropertyIsCaseInsensitive(string propertyName)
     {
-        string json = $$"""[{ "{{propertyName}}": "{{Identifier}}" }]""";
+        string json = $$"""[{ "{{propertyName}}": "{{identifier}}" }]""";
 
         var result = RelationshipFieldMatcher.ReadIdentifiers(json, FieldDataType.ContentItemReference);
 
-        Assert.That(result, Is.EqualTo(new[] { Identifier }));
+        Assert.That(result, Is.EqualTo(new[] { identifier }));
     }
 
     [Test]
     public void ReadIdentifiers_WebPagesUsesWebPageGuid()
     {
-        string json = $$"""[{ "webpageguid": "{{Identifier}}", "Identifier": "{{Guid.NewGuid()}}" }]""";
+        string json = $$"""[{ "webpageguid": "{{identifier}}", "Identifier": "{{Guid.NewGuid()}}" }]""";
 
         var result = RelationshipFieldMatcher.ReadIdentifiers(json, FieldDataType.WebPages);
 
-        Assert.That(result, Is.EqualTo(new[] { Identifier }));
+        Assert.That(result, Is.EqualTo(new[] { identifier }));
     }
 
     [Test]
@@ -36,19 +36,19 @@ public class RelationshipFieldMatcherTests
         Assert.Multiple(() =>
         {
             Assert.That(RelationshipFieldMatcher.MatchesTarget(
-                $$"""[{ "Identifier": "{{Identifier}}" }]""",
+                $$"""[{ "Identifier": "{{identifier}}" }]""",
                 FieldDataType.ContentItemReference,
-                Identifier,
+                identifier,
                 webPageIdentifier), Is.True);
             Assert.That(RelationshipFieldMatcher.MatchesTarget(
                 $$"""[{ "WebPageGuid": "{{webPageIdentifier}}" }]""",
                 FieldDataType.WebPages,
-                Identifier,
+                identifier,
                 webPageIdentifier), Is.True);
             Assert.That(RelationshipFieldMatcher.MatchesTarget(
                 $$"""[{ "Identifier": "{{Guid.NewGuid()}}" }]""",
                 FieldDataType.ContentItemReference,
-                Identifier,
+                identifier,
                 webPageIdentifier), Is.False);
         });
     }
