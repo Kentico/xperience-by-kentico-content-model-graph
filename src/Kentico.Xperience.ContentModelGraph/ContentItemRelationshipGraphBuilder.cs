@@ -760,13 +760,12 @@ public sealed class ContentItemRelationshipGraphBuilder(
     {
         if (element.ValueKind == JsonValueKind.Object)
         {
-            foreach (var property in element.EnumerateObject())
+            var property = element.EnumerateObject().FirstOrDefault(current => string.Equals(current.Name, name, StringComparison.OrdinalIgnoreCase));
+
+            if (property.Name is not null)
             {
-                if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))
-                {
-                    value = property.Value;
-                    return true;
-                }
+                value = property.Value;
+                return true;
             }
         }
 
