@@ -388,6 +388,7 @@ const ContentItemRelationshipsGraph = ({
               <input
                 className="cmg-relationships-search"
                 type="search"
+                aria-label="Highlight items by name"
                 placeholder="Highlight by name..."
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
