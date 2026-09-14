@@ -193,7 +193,7 @@ public sealed class ContentItemRelationshipGraphBuilder(
 
         var ids = new List<int>();
         var seen = new HashSet<int>();
-        ContentLanguageInfo? current = selected;
+        var current = selected;
         while (current is not null && seen.Add(current.ContentLanguageID))
         {
             ids.Add(current.ContentLanguageID);
@@ -327,7 +327,7 @@ public sealed class ContentItemRelationshipGraphBuilder(
             return [];
         }
 
-        Guid? pageGuid = webPages.GetValueOrDefault(targetItemId)?.WebPageItemGUID;
+        var pageGuid = webPages.GetValueOrDefault(targetItemId)?.WebPageItemGUID;
         var sources = new List<RelationshipFieldSource>();
 
         if (fieldsByType.TryGetValue(sourceItem.ContentItemContentTypeID, out var fields)
@@ -470,6 +470,20 @@ public sealed class ContentItemRelationshipGraphBuilder(
                         }
                     }
                 }
+                break;
+            case JsonValueKind.Undefined:
+                break;
+            case JsonValueKind.Object:
+                break;
+            case JsonValueKind.Number:
+                break;
+            case JsonValueKind.True:
+                break;
+            case JsonValueKind.False:
+                break;
+            case JsonValueKind.Null:
+                break;
+            default:
                 break;
         }
     }
