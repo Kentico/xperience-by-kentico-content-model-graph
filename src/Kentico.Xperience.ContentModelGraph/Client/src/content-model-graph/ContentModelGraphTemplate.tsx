@@ -212,9 +212,11 @@ const ContentModelGraph = ({
           source: edge.source,
           target: edge.target,
           label:
-            showFieldNames && edge.kind !== "schemaAssignment"
-              ? edge.label
-              : undefined,
+            edge.kind === "schemaAssignment"
+              ? "Schema"
+              : showFieldNames
+                ? edge.label
+                : undefined,
           labelBgPadding: [4, 2] as [number, number],
           labelBgBorderRadius: 4,
           style: {
