@@ -1,0 +1,24 @@
+@namespace DancingGoat.EmailComponents
+
+@if (!string.IsNullOrEmpty(ImageUrl))
+{
+    <mj-image src="@ImageUrl" alt="@ImageAlternativeText" align="center" />
+}
+
+<mj-text font-size="16px">
+    @if (!string.IsNullOrEmpty(ProductName))
+    {
+        <h2>@ProductName</h2>
+    }
+    @((MarkupString)ProductDescription)
+</mj-text>
+
+<mj-button align="center"
+           href="@ProductPageUrl"
+           background-color="#1E1A13"
+           color="#FFFFFF"
+           font-size="14px"
+           inner-padding="24px 64px"
+           border="none">
+    @Properties.CallToActionText
+</mj-button>
