@@ -28,6 +28,7 @@ export interface GraphNodeDto {
   readonly id: string;
   readonly name: string;
   readonly displayName: string;
+  readonly adminUrl?: string;
   readonly kind: NodeKind;
   readonly systemObjectTypeGroup?: SystemObjectTypeGroup;
   readonly fieldCount: number;

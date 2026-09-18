@@ -8,6 +8,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddContentModelGraph(this IServiceCollection services)
     {
         services.TryAddSingleton<IContentModelGraphBuilder, ContentModelGraphBuilder>();
+        services.TryAddSingleton<IContentItemRelationshipGraphBuilder, ContentItemRelationshipGraphBuilder>();
 
         return services;
     }

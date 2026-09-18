@@ -41,6 +41,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Kentico.Xperience.ContentModelGraph.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Kentico.Xperience.Admin" />
   </ItemGroup>
 

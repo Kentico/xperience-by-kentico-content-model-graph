@@ -40,6 +40,8 @@ public sealed class GraphNode
 
     public string DisplayName { get; set; } = string.Empty;
 
+    public string? AdminUrl { get; set; }
+
     public string Kind { get; set; } = string.Empty;
 
     public string? SystemObjectTypeGroup { get; set; }

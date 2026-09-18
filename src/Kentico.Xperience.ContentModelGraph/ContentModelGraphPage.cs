@@ -18,17 +18,25 @@ namespace Kentico.Xperience.ContentModelGraph;
 
 internal sealed class ContentModelGraphPage(
     IProgressiveCache progressiveCache,
-    IContentModelGraphBuilder builder) : Page<ContentModelGraphClientProperties>
+    IContentModelGraphBuilder builder) : ContentModelGraphPageBase(progressiveCache, builder)
 {
     public const string IDENTIFIER = "Kentico.Xperience.ContentModelGraph.Admin.App";
+}
 
+internal abstract class ContentModelGraphPageBase(
+    IProgressiveCache progressiveCache,
+    IContentModelGraphBuilder builder) : Page<ContentModelGraphClientProperties>
+{
     private const string CACHE_KEY = "kentico|xperience|contentmodelgraph";
     private const int CACHE_MINUTES = 60;
+
+    protected virtual bool ShowFieldNamesByDefault => false;
 
     public override async Task<ContentModelGraphClientProperties> ConfigureTemplateProperties(ContentModelGraphClientProperties properties)
     {
         properties.Graph = await GetGraph();
         properties.AssemblyName = Assembly.GetExecutingAssembly().GetName().Name ?? "content-model-graph";
+        properties.ShowFieldNamesByDefault = ShowFieldNamesByDefault;
 
         return properties;
     }
@@ -45,7 +53,7 @@ internal sealed class ContentModelGraphPage(
         return ResponseFrom(await GetGraph()).AddSuccessMessage("Content model graph cache cleared.");
     }
 
-    private Task<GraphData> GetGraph() =>
+    protected virtual Task<GraphData> GetGraph() =>
         progressiveCache.LoadAsync(_ => builder.Build(), new CacheSettings(CACHE_MINUTES, CACHE_KEY)
         {
             GetCacheDependency = () => CacheHelper.GetCacheDependency([CACHE_KEY])
@@ -57,4 +65,6 @@ internal sealed class ContentModelGraphClientProperties : TemplateClientProperti
     public GraphData Graph { get; set; } = new();
 
     public string AssemblyName { get; set; } = string.Empty;
+
+    public bool ShowFieldNamesByDefault { get; set; }
 }

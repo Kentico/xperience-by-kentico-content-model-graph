@@ -38,6 +38,17 @@ The right panel filters node and relationship types. Search dims nodes whose dis
 
 Graph data is cached for 60 minutes. **Clear cache** invalidates the shared cache key and rebuilds the graph. **Reset graph** reloads the current cached graph and restores default client filters.
 
+## Content Item Relationships
+
+Open a content item and select **Content relationships** to inspect item-level references for the current language. The page is available for reusable content items in the Content Hub, web pages, emails, and headless items:
+
+- **References this item** lists items with a latest version that points to the current item. When multiple language variants contain the same reference, the current language is preferred.
+- **Referenced by this item** lists items pointed to by the current item's latest version in the current language.
+
+The page uses the current item's workspace `View` permission. Display names prefer the current language and fall back to another available display name, then the item code name.
+
+Xperience stores a reference-group identifier with each relationship, but the public metadata used by this package does not reliably map that identifier to a field definition. The page therefore omits field names when they cannot be resolved.
+
 ## Client Development
 
 Install dependencies and run the development server:
