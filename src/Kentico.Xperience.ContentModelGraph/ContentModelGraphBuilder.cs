@@ -6,9 +6,14 @@ using CMS.DataEngine;
 using CMS.FormEngine;
 using CMS.Modules;
 
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.UIPages;
+
 namespace Kentico.Xperience.ContentModelGraph;
 
-public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonomyInfoProvider) : IContentModelGraphBuilder
+public sealed class ContentModelGraphBuilder(
+    IInfoProvider<TaxonomyInfo> taxonomyInfoProvider,
+    IPageLinkGenerator pageLinkGenerator) : IContentModelGraphBuilder
 {
     private const string SCHEMA_REGISTRY_CLASS_NAME = "CMS.ContentItemCommonData";
     private const string CLASS_TYPE_CONTENT = "Content";
@@ -61,6 +66,7 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
                 Id = nodeId,
                 Name = dataClass.ClassName,
                 DisplayName = dataClass.ClassDisplayName,
+                AdminUrl = GetClassAdminUrl(dataClass),
                 Kind = ResolveNodeKind(dataClass, systemResources),
                 SystemObjectTypeGroup = ResolveSystemObjectTypeGroup(dataClass, systemResources),
                 FieldCount = fields.Count(field =>
@@ -96,7 +102,11 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
     private async Task<Dictionary<Guid, string>> AddTaxonomyNodes(IDictionary<string, GraphNode> nodes)
     {
         var taxonomies = await taxonomyInfoProvider.Get()
-            .Columns(nameof(TaxonomyInfo.TaxonomyGUID), nameof(TaxonomyInfo.TaxonomyName), nameof(TaxonomyInfo.TaxonomyTitle))
+            .Columns(
+                nameof(TaxonomyInfo.TaxonomyID),
+                nameof(TaxonomyInfo.TaxonomyGUID),
+                nameof(TaxonomyInfo.TaxonomyName),
+                nameof(TaxonomyInfo.TaxonomyTitle))
             .GetEnumerableTypedResultAsync();
         var taxonomyNames = new Dictionary<Guid, string>();
 
@@ -108,6 +118,7 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
                 Id = TaxonomyNodeId(taxonomy.TaxonomyGUID),
                 Name = taxonomy.TaxonomyName,
                 DisplayName = taxonomy.TaxonomyTitle,
+                AdminUrl = $"/admin/taxonomy/list/{taxonomy.TaxonomyID}/tags/group",
                 Kind = GraphNodeKind.TAXONOMY
             };
         }
@@ -148,6 +159,7 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
                 Id = nodeId,
                 Name = name,
                 DisplayName = string.IsNullOrEmpty(caption) ? name : caption,
+                AdminUrl = $"/admin/content-types/reusable-field-schemas/{guid}/fields",
                 Kind = GraphNodeKind.SCHEMA,
                 FieldCount = fieldCount
             };
@@ -205,7 +217,7 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
 
         foreach (var field in fieldList)
         {
-            string fieldName = field.Attribute("column")?.Value ?? string.Empty;
+            string fieldName = ContentModelGraphFieldLabel.Resolve(field);
             var settings = field.Element("settings");
 
             foreach (var guid in ReadGuidList(settings?.Element("AllowedContentItemTypeIdentifiers")?.Value))
@@ -243,7 +255,7 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
         foreach (var field in fields.Where(field =>
             string.Equals(field.Attribute("columntype")?.Value, "taxonomy", StringComparison.OrdinalIgnoreCase)))
         {
-            string fieldName = field.Attribute("column")?.Value ?? string.Empty;
+            string fieldName = ContentModelGraphFieldLabel.Resolve(field);
             foreach (var guid in ReadGuidList(field.Element("settings")?.Element("TaxonomyGroup")?.Value).Where(taxonomyNames.ContainsKey))
             {
                 AddEdge(edges, nodeId, TaxonomyNodeId(guid), GraphEdgeKind.TAXONOMY_REFERENCE, fieldName);
@@ -516,6 +528,23 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
 
     private static string TaxonomyNodeId(Guid taxonomyGuid) => $"taxonomy:{taxonomyGuid}";
 
+    private string GetClassAdminUrl(DataClassInfo dataClass)
+    {
+        var parameters = new PageParameterValues();
+
+        if (string.Equals(dataClass.ClassType, CLASS_TYPE_CONTENT, StringComparison.OrdinalIgnoreCase))
+        {
+            parameters.Add(typeof(ContentTypeEditSection), dataClass.ClassID);
+
+            return AdminUrlHelper.EnsureAdminPrefix(pageLinkGenerator.GetPath<ContentTypeFields>(parameters));
+        }
+
+        parameters.Add(typeof(ModuleEditSection), dataClass.ClassResourceID);
+        parameters.Add(typeof(ClassEditSection), dataClass.ClassID);
+
+        return AdminUrlHelper.EnsureAdminPrefix(pageLinkGenerator.GetPath<ClassFields>(parameters));
+    }
+
     private sealed class EdgeAccumulator
     {
         public string Id { get; set; } = string.Empty;
@@ -536,5 +565,31 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
             Kind = Kind,
             Label = string.Join(", ", Labels)
         };
+    }
+}
+
+internal static class AdminUrlHelper
+{
+    public static string EnsureAdminPrefix(string path)
+    {
+        if (path.Equals("/admin", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("/admin/", StringComparison.OrdinalIgnoreCase))
+        {
+            return path;
+        }
+
+        return $"/admin/{path.TrimStart('/')}";
+    }
+}
+
+internal static class ContentModelGraphFieldLabel
+{
+    public static string Resolve(XElement field)
+    {
+        string? caption = field.Element("properties")?.Element("fieldcaption")?.Value;
+
+        return string.IsNullOrWhiteSpace(caption)
+            ? field.Attribute("column")?.Value ?? string.Empty
+            : caption;
     }
 }

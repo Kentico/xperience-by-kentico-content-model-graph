@@ -13,7 +13,7 @@ using Kentico.Xperience.Admin.Websites.UIPages;
     typeof(Kentico.Xperience.ContentModelGraph.WebPageRelationshipsPage),
     "Content relationships",
     "@kentico/xperience-content-model-graph/ContentItemRelationships",
-    200,
+    1001,
     Icon = Icons.ChoiceMultiScheme)]
 
 namespace Kentico.Xperience.ContentModelGraph;

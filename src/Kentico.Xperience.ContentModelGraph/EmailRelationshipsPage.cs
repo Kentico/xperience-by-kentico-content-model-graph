@@ -12,7 +12,7 @@ using Kentico.Xperience.Admin.DigitalMarketing.UIPages;
     typeof(Kentico.Xperience.ContentModelGraph.EmailRelationshipsPage),
     "Content relationships",
     "@kentico/xperience-content-model-graph/ContentItemRelationships",
-    200,
+    1001,
     Icon = Icons.ChoiceMultiScheme)]
 
 namespace Kentico.Xperience.ContentModelGraph;

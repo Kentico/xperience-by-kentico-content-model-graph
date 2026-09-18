@@ -6,6 +6,7 @@ import { nodeColor, type NodeKind } from "./model";
 export interface ClassNodeData extends Record<string, unknown> {
   readonly displayName: string;
   readonly name: string;
+  readonly adminUrl?: string;
   readonly kind: NodeKind;
   readonly fieldCount: number;
   readonly horizontal: boolean;
@@ -37,7 +38,13 @@ export const ClassNodeComponent = ({ data }: NodeProps<ClassNode>) => {
         type="target"
         position={data.horizontal ? Position.Left : Position.Top}
       />
-      <div className="cmg-node__title">{data.displayName}</div>
+      {data.adminUrl ? (
+        <a className="cmg-node__title nodrag" href={data.adminUrl}>
+          {data.displayName}
+        </a>
+      ) : (
+        <div className="cmg-node__title">{data.displayName}</div>
+      )}
       <div className="cmg-node__meta">{details}</div>
       <Handle
         type="source"

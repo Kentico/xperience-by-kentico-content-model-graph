@@ -45,6 +45,7 @@ import {
 interface ContentModelGraphProps {
   readonly graph: GraphDataDto;
   readonly assemblyName: string;
+  readonly showFieldNamesByDefault: boolean;
 }
 
 const nodeTypes = { classNode: ClassNodeComponent };
@@ -136,7 +137,11 @@ const exportJson = (data: GraphDataDto, assemblyName: string) => {
   URL.revokeObjectURL(url);
 };
 
-const ContentModelGraph = ({ graph, assemblyName }: ContentModelGraphProps) => {
+const ContentModelGraph = ({
+  graph,
+  assemblyName,
+  showFieldNamesByDefault,
+}: ContentModelGraphProps) => {
   const { fitView } = useReactFlow();
   const [data, setData] = useState(graph);
   const [visibleNodeKinds, setVisibleNodeKinds] =
@@ -146,7 +151,7 @@ const ContentModelGraph = ({ graph, assemblyName }: ContentModelGraphProps) => {
   const [visibleEdgeKinds, setVisibleEdgeKinds] =
     useState<EdgeKind[]>(defaultEdgeKinds);
   const [direction, setDirection] = useState<"LR" | "TB">("LR");
-  const [showFieldNames, setShowFieldNames] = useState(false);
+  const [showFieldNames, setShowFieldNames] = useState(showFieldNamesByDefault);
   const [search, setSearch] = useState("");
 
   const { execute: resetGraph } = usePageCommand<GraphDataDto>(
@@ -159,7 +164,7 @@ const ContentModelGraph = ({ graph, assemblyName }: ContentModelGraphProps) => {
           setVisibleSystemObjectTypeGroups(defaultSystemObjectTypeGroups);
           setVisibleEdgeKinds(defaultEdgeKinds);
           setDirection("LR");
-          setShowFieldNames(false);
+          setShowFieldNames(showFieldNamesByDefault);
           setSearch("");
         }
       },
@@ -230,6 +235,7 @@ const ContentModelGraph = ({ graph, assemblyName }: ContentModelGraphProps) => {
         data: {
           displayName: node.displayName,
           name: node.name,
+          adminUrl: node.adminUrl,
           kind: node.kind,
           fieldCount: node.fieldCount,
           horizontal: direction === "LR",
