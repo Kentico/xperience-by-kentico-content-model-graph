@@ -3,26 +3,32 @@ using CMS.Helpers;
 
 using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.Admin.Base.UIPages;
+using Kentico.Xperience.ContentModelGraph;
 
 [assembly: UIPage(
     typeof(ContentTypeEditSection),
     "content-model-graph",
-    typeof(Kentico.Xperience.ContentModelGraph.ContentTypeModelGraphPage),
+    typeof(ContentTypeModelGraphPage),
     "Content model graph",
     "@kentico/xperience-content-model-graph/ContentModelGraph",
-    1001,
+    ContentModelGraphPageOrder.Last,
     Icon = Icons.CustomElement)]
 
 [assembly: UIPage(
     typeof(ReusableFieldSchemaEditSection),
     "content-model-graph",
-    typeof(Kentico.Xperience.ContentModelGraph.ReusableFieldSchemaModelGraphPage),
+    typeof(ReusableFieldSchemaModelGraphPage),
     "Content model graph",
     "@kentico/xperience-content-model-graph/ContentModelGraph",
-    1001,
+    ContentModelGraphPageOrder.Last,
     Icon = Icons.CustomElement)]
 
 namespace Kentico.Xperience.ContentModelGraph;
+
+internal static class ContentModelGraphPageOrder
+{
+    public const int Last = UIPageOrder.NoOrder + 100;
+}
 
 internal abstract class ContextualContentModelGraphPage(
     IProgressiveCache progressiveCache,
