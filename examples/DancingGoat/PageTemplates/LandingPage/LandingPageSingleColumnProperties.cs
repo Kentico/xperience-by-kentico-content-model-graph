@@ -1,4 +1,9 @@
-﻿using Kentico.PageBuilder.Web.Mvc.PageTemplates;
+﻿using CMS.ContentEngine;
+
+using DancingGoat.Models;
+
+using Kentico.Forms.Web.Mvc;
+using Kentico.PageBuilder.Web.Mvc.PageTemplates;
 using Kentico.Xperience.Admin.Base;
 using Kentico.Xperience.Admin.Base.FormAnnotations;
 
@@ -21,5 +26,12 @@ namespace DancingGoat.PageTemplates
             Options = "first-color;{$dancinggoat.landingpagesinglecolumn.headercolor.option.chocolate$}\nsecond-color;{$dancinggoat.landingpagesinglecolumn.headercolor.option.gold$}\nthird-color;{$dancinggoat.landingpagesinglecolumn.headercolor.option.espresso$}")]
         [ExcludeFromAiraTranslation]
         public string HeaderColorCssClass { get; set; } = "first-color";
+
+
+        /// <summary>
+        /// Image to be selected for the page template.
+        /// </summary>
+        [ContentItemSelectorComponent(Image.CONTENT_TYPE_NAME, Label = "{$dancinggoat.landingpagesinglecolumn.image.label$}", Order = 3, MaximumItems = 1)]
+        public IEnumerable<ContentItemReference> Images { get; set; } = [];
     }
 }

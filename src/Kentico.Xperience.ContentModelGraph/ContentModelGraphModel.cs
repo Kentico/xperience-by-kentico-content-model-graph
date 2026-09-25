@@ -40,11 +40,19 @@ public sealed class GraphNode
 
     public string DisplayName { get; set; } = string.Empty;
 
+    public string? AdminUrl { get; set; }
+
     public string Kind { get; set; } = string.Empty;
 
     public string? SystemObjectTypeGroup { get; set; }
 
     public int FieldCount { get; set; }
+
+    /// <summary>
+    /// Total number of fields contributed by the reusable field schemas assigned to this node,
+    /// or <c>null</c> when the node has no assigned schemas and so has no schema fields to report.
+    /// </summary>
+    public int? SchemaFieldCount { get; set; }
 }
 
 public sealed class GraphEdge
@@ -65,4 +73,11 @@ public sealed class GraphData
     public IReadOnlyCollection<GraphNode> Nodes { get; set; } = [];
 
     public IReadOnlyCollection<GraphEdge> Edges { get; set; } = [];
+
+    /// <summary>
+    /// Identifier of the node the graph was filtered down to, which the client marks as the current item,
+    /// or <c>null</c> when the graph is not focused on any one node - as on the whole content model graph,
+    /// which is every node the application knows about and singles none of them out.
+    /// </summary>
+    public string? FocalNodeId { get; set; }
 }

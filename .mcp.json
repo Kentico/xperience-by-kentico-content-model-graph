@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "kentico-docs": {
+      "type": "http",
+      "url": "https://docs.kentico.com/mcp"
+    },
+    "xperience-management": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@kentico/management-api-mcp@31.7.3-preview"],
+      "env": {
+        "MANAGEMENT_API_URL": "http://localhost:19794/kentico-api/management",
+        "MANAGEMENT_API_SECRET": "eny01mkx6vuws79oa4tjfg3iqd8bh5cz"
+      }
+    }
+  }
+}

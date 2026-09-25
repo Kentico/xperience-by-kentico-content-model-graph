@@ -1,11 +1,13 @@
+@import "../shared/EdgeLabel.css";
+
 .cmg-root {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-m, 12px);
+  height: 100%;
   height: calc(100vh - 160px);
   min-width: 870px;
   min-height: 520px;
-  padding: var(--spacing-l, 16px);
   box-sizing: border-box;
   font-family: var(--typeface-product-secondary, "Inter", sans-serif);
   font-size: var(--font-size-m, 14px);
@@ -60,8 +62,31 @@
   gap: var(--spacing-s, 8px);
 }
 
+/*
+ * Docked against the right border. The height stops short of the bottom-right
+ * minimap stack (15px panel margin + 30px toggle + 8px gap + 105px map) so an
+ * expanded legend scrolls instead of covering it.
+ */
 .cmg-panel--filters {
   align-items: flex-end;
+  max-height: calc(100% - 170px);
+  margin: 0;
+  padding: 10px 10px 10px 0;
+}
+
+/* Docked on the canvas, so the toggles need a surface of their own to stay legible over the graph. */
+.cmg-filters-toggle,
+.cmg-minimap-toggle {
+  padding: 2px;
+  border: var(--border-width-default, 1px) var(--border-style-default, solid)
+    var(--color-paper-border, #dfdfdf);
+  border-radius: var(--radius-s, 4px);
+  background: var(--color-paper-background, #fff);
+  box-shadow: var(--shadow-xs, 0 0 8px rgba(38, 38, 38, 0.03));
+}
+
+.cmg-filters-toggle {
+  flex: 0 0 auto;
 }
 
 .cmg-actions {
@@ -73,6 +98,9 @@
 
 .cmg-filter-legend {
   width: 200px;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: var(--spacing-s, 8px);
   border: var(--border-width-default, 1px) var(--border-style-default, solid)
     var(--color-paper-border, #dfdfdf);
@@ -151,8 +179,19 @@
   font-size: var(--font-size-xs, 11px);
 }
 
+/*
+ * The node is a fixed size so the Dagre layout can reserve room for it.
+ * height = 2 title lines (40) + name line (16) + vertical padding (16)
+ *        + top/bottom border (2) = 74px,
+ * which must stay in sync with CLASS_NODE_HEIGHT in ClassNode.tsx.
+ */
 .cmg-node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   width: 230px;
+  height: 74px;
   padding: var(--spacing-s, 8px) var(--spacing-m, 12px);
   box-sizing: border-box;
   border: var(--border-width-default, 1px) var(--border-style-default, solid)
@@ -179,16 +218,72 @@
   opacity: 0.25;
 }
 
+/*
+ * The node the contextual pages filtered the graph down to, marked the way the relationships graph marks
+ * its root: the focus border and a "Current item" ribbon across the top. 24px taller than every other
+ * node, which is what CLASS_NODE_CURRENT_EXTRA_HEIGHT reserves in the layout - a ribbon Dagre did not know
+ * about would make this node overlap its neighbours.
+ *
+ * The ribbon is taken out of flow and the space for it given back as padding, rather than sitting in the
+ * flex column as it does on a relationships node. Nodes here are a fixed height with their contents
+ * centred, so a ribbon in the column would drift down from the top border as soon as a title took one line
+ * instead of two, and its background would stop short of the node's edge.
+ */
+.cmg-node--current {
+  height: 98px;
+  padding-top: calc(var(--spacing-s, 8px) + 24px);
+  border-color: var(--color-focus, #3d5dff);
+  box-shadow: var(
+    --shadow-s,
+    0 8px 14px rgba(38, 38, 38, 0.08),
+    0 0 8px rgba(38, 38, 38, 0.03)
+  );
+}
+
+/* 24px: 2px padding either side of a 20px line. */
+.cmg-node__current {
+  position: absolute;
+  inset: 0 0 auto 0;
+  padding: var(--spacing-xxs, 2px) var(--spacing-m, 12px);
+  border-top-right-radius: var(--radius-m, 8px);
+  background: var(--color-focus, #3d5dff);
+  color: #fff;
+  font-size: var(--font-size-xs, 11px);
+  font-weight: var(--weight-semibold, 600);
+  line-height: var(--line-l, 20px);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/*
+ * Long names wrap onto a second line rather than being clipped; anything that
+ * still does not fit gets a deliberate ellipsis, with the node tooltip as the
+ * fallback for the full text.
+ */
 .cmg-node__title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   font-size: var(--font-size-m, 14px);
   line-height: var(--line-l, 20px);
   font-weight: var(--weight-semibold, 600);
   color: var(--color-text-default-on-light, #151515);
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
+a.cmg-node__title:hover {
+  color: var(--color-link-hover, #223cc7);
+  text-decoration: underline;
+}
+
+a.cmg-node__title:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-default, 0 0 0 1px #fff, 0 0 0 3px #3d5dff);
+}
+
+/* Code name of the class, schema or taxonomy. */
 .cmg-node__meta {
   font-size: var(--font-size-xs, 11px);
   line-height: var(--line-m, 16px);
@@ -206,14 +301,18 @@
   pointer-events: none;
 }
 
-.cmg-canvas .react-flow__edge-text {
-  fill: var(--color-text-low-emphasis, #525252);
-  font-family: var(--typeface-product-secondary, "Inter", sans-serif);
-  font-size: var(--font-size-xs, 11px);
-}
-
-.cmg-canvas .react-flow__edge-textbg {
-  fill: var(--color-paper-background, #fff);
+/*
+ * EdgeLabelRenderer's container ships with no z-index, so a label lands in the same paint layer as the
+ * nodes and a node drawn later can clip it. ReactFlow gives node wrappers an inline z-index of 0, raised
+ * to 1000 while selected or dragged, so labels sit just above that - the same value ReactFlow itself uses
+ * for the connection line. The viewport is its own stacking context, so this stays below the panels.
+ *
+ * Duplicated rather than shared with the relationships graph: the selector is scoped to one canvas, which
+ * is the point - the rule reaches into ReactFlow's own markup and neither graph should be reordering the
+ * other's paint layers.
+ */
+.cmg-canvas .react-flow__edgelabel-renderer {
+  z-index: 1001;
 }
 
 .cmg-canvas .react-flow__handle {
@@ -236,6 +335,11 @@
     var(--color-paper-border, #dfdfdf);
   border-radius: var(--radius-s, 4px);
   background: var(--color-paper-background, #fff);
+}
+
+/* Stack the map above its toggle: 15px panel margin + 30px toggle + gap. */
+.cmg-canvas .react-flow__minimap.cmg-minimap {
+  margin-bottom: calc(15px + 30px + var(--spacing-s, 8px));
 }
 
 .cmg-canvas .react-flow__attribution {

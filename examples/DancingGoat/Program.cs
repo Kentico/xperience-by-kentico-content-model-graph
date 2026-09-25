@@ -17,6 +17,7 @@ using Kentico.Membership;
 using Kentico.OnlineMarketing.Web.Mvc;
 using Kentico.PageBuilder.Web.Mvc;
 using Kentico.Web.Mvc;
+using Kentico.Xperience.ManagementApi;
 using Kentico.Xperience.Mjml;
 #if !SEPARATED_ADMIN
 using Kentico.Xperience.ContentModelGraph;
@@ -83,6 +84,17 @@ if (builder.Environment.IsDevelopment())
     builder.Services.Configure<UrlResolveOptions>(options => options.UseSSL = false);
 }
 
+// The management API backs the "xperience-management" MCP server defined in .mcp.json.
+// It is enabled only when XPERIENCE_MANAGEMENT_API_SECRET is set, so the app runs normally without it.
+// Never enable the management API outside of local development.
+string? managementApiSecret = builder.Configuration["XPERIENCE_MANAGEMENT_API_SECRET"];
+bool managementApiEnabled = builder.Environment.IsDevelopment() && managementApiSecret?.Length >= 32;
+
+if (managementApiEnabled)
+{
+    builder.Services.AddKenticoManagementApi(options => options.Secret = managementApiSecret!);
+}
+
 var app = builder.Build();
 
 app.InitKentico();
@@ -93,6 +105,10 @@ app.UseCookiePolicy();
 
 app.UseAuthentication();
 
+if (managementApiEnabled)
+{
+    app.UseKenticoManagementApi();
+}
 
 app.UseKentico();
 

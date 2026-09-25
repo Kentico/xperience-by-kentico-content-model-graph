@@ -32,6 +32,7 @@
     <PackageReference Include="Kentico.Xperience.AzureStorage" />
     <PackageReference Include="Kentico.Xperience.ImageProcessing" />
     <PackageReference Include="Kentico.Xperience.Mjml" />
+    <PackageReference Include="Kentico.Xperience.ManagementApi" />
     <PackageReference Include="Kentico.Xperience.WebApp" />
   </ItemGroup>
 </Project>

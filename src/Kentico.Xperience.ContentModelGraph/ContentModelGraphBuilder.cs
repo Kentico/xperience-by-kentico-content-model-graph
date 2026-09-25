@@ -5,10 +5,17 @@ using CMS.ContentEngine;
 using CMS.DataEngine;
 using CMS.FormEngine;
 using CMS.Modules;
+using CMS.OnlineForms;
+
+using Kentico.Xperience.Admin.Base;
+using Kentico.Xperience.Admin.Base.UIPages;
 
 namespace Kentico.Xperience.ContentModelGraph;
 
-public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonomyInfoProvider) : IContentModelGraphBuilder
+public sealed class ContentModelGraphBuilder(
+    IInfoProvider<TaxonomyInfo> taxonomyInfoProvider,
+    IInfoProvider<BizFormInfo> bizFormInfoProvider,
+    IPageLinkGenerator pageLinkGenerator) : IContentModelGraphBuilder
 {
     private const string SCHEMA_REGISTRY_CLASS_NAME = "CMS.ContentItemCommonData";
     private const string CLASS_TYPE_CONTENT = "Content";
@@ -16,7 +23,7 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
     private const string CLASS_TYPE_FORM = "Form";
     private const string SYSTEM_RESOURCE_NAME = "CMS";
 
-    public async Task<GraphData> Build()
+    public async Task<GraphData> Build(GraphApplicationAccess applications)
     {
         var classes = (await DataClassInfoProvider.ProviderObject.Get()
             .Columns(nameof(DataClassInfo.ClassID),
@@ -36,9 +43,14 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
         var nodes = new Dictionary<string, GraphNode>(StringComparer.OrdinalIgnoreCase);
         var edges = new Dictionary<string, EdgeAccumulator>(StringComparer.OrdinalIgnoreCase);
 
-        var taxonomyNames = await AddTaxonomyNodes(nodes);
-        var schemaNames = AddSchemaNodes(definitions, nodes);
+        var taxonomyNames = await AddTaxonomyNodes(nodes, applications);
+        // Schema nodes are built before the class loop below, so their field counts are already
+        // known by the time a class needs to total up the schemas assigned to it.
+        var schemaNames = AddSchemaNodes(definitions, nodes, applications, out var schemaFieldCounts);
         AddSchemaTaxonomyEdges(definitions, schemaNames, taxonomyNames, edges);
+        // Resolved for the whole graph in one query, before the loop, so that a form class can be linked to
+        // its form without a query per node.
+        var formIdsByClassId = await GetFormIdsByClassId(classes, systemResources, applications.Forms);
 
         foreach (var dataClass in classes)
         {
@@ -55,16 +67,25 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
 
             var fields = definition.Elements("field").ToList();
             string nodeId = ClassNodeId(dataClass.ClassName);
+            string nodeKind = ResolveNodeKind(dataClass, systemResources);
 
             nodes[nodeId] = new GraphNode
             {
                 Id = nodeId,
                 Name = dataClass.ClassName,
                 DisplayName = dataClass.ClassDisplayName,
-                Kind = ResolveNodeKind(dataClass, systemResources),
+                AdminUrl = GetClassAdminUrl(
+                    dataClass.ClassID,
+                    dataClass.ClassResourceID,
+                    dataClass.ClassType,
+                    nodeKind,
+                    formIdsByClassId,
+                    applications),
+                Kind = nodeKind,
                 SystemObjectTypeGroup = ResolveSystemObjectTypeGroup(dataClass, systemResources),
                 FieldCount = fields.Count(field =>
-                    field.Attribute("system")?.Value != "true" && field.Attribute("isPK")?.Value != "true")
+                    field.Attribute("system")?.Value != "true" && field.Attribute("isPK")?.Value != "true"),
+                SchemaFieldCount = SumAssignedSchemaFieldCounts(definition, schemaFieldCounts)
             };
 
             AddAssignedSchemaEdges(definition, nodeId, schemaNames, edges);
@@ -93,10 +114,16 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
         return new GraphData { Nodes = nodes.Values.ToList(), Edges = resolvedEdges };
     }
 
-    private async Task<Dictionary<Guid, string>> AddTaxonomyNodes(IDictionary<string, GraphNode> nodes)
+    private async Task<Dictionary<Guid, string>> AddTaxonomyNodes(
+        IDictionary<string, GraphNode> nodes,
+        GraphApplicationAccess applications)
     {
         var taxonomies = await taxonomyInfoProvider.Get()
-            .Columns(nameof(TaxonomyInfo.TaxonomyGUID), nameof(TaxonomyInfo.TaxonomyName), nameof(TaxonomyInfo.TaxonomyTitle))
+            .Columns(
+                nameof(TaxonomyInfo.TaxonomyID),
+                nameof(TaxonomyInfo.TaxonomyGUID),
+                nameof(TaxonomyInfo.TaxonomyName),
+                nameof(TaxonomyInfo.TaxonomyTitle))
             .GetEnumerableTypedResultAsync();
         var taxonomyNames = new Dictionary<Guid, string>();
 
@@ -108,6 +135,7 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
                 Id = TaxonomyNodeId(taxonomy.TaxonomyGUID),
                 Name = taxonomy.TaxonomyName,
                 DisplayName = taxonomy.TaxonomyTitle,
+                AdminUrl = GetTaxonomyAdminUrl(taxonomy.TaxonomyID, applications),
                 Kind = GraphNodeKind.TAXONOMY
             };
         }
@@ -115,11 +143,14 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
         return taxonomyNames;
     }
 
-    private static Dictionary<Guid, string> AddSchemaNodes(
+    private Dictionary<Guid, string> AddSchemaNodes(
         IDictionary<string, XElement?> definitions,
-        IDictionary<string, GraphNode> nodes)
+        IDictionary<string, GraphNode> nodes,
+        GraphApplicationAccess applications,
+        out Dictionary<Guid, int> schemaFieldCounts)
     {
         var schemaNames = new Dictionary<Guid, string>();
+        schemaFieldCounts = [];
 
         if (!definitions.TryGetValue(SCHEMA_REGISTRY_CLASS_NAME, out var registry) || registry is null)
         {
@@ -142,18 +173,43 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
                     StringComparison.OrdinalIgnoreCase));
 
             schemaNames[guid] = name;
+            schemaFieldCounts[guid] = fieldCount;
             string nodeId = SchemaNodeId(guid);
             nodes[nodeId] = new GraphNode
             {
                 Id = nodeId,
                 Name = name,
                 DisplayName = string.IsNullOrEmpty(caption) ? name : caption,
+                AdminUrl = GetReusableFieldSchemaAdminUrl(guid, applications),
                 Kind = GraphNodeKind.SCHEMA,
                 FieldCount = fieldCount
             };
         }
 
         return schemaNames;
+    }
+
+    /// <summary>
+    /// Totals the fields contributed by every reusable field schema assigned to a class.
+    /// Returns <c>null</c> when the class has no assigned schemas, so that callers can omit
+    /// the schema field count rather than reporting a misleading zero.
+    /// </summary>
+    private static int? SumAssignedSchemaFieldCounts(
+        XElement definition,
+        IDictionary<Guid, int> schemaFieldCounts)
+    {
+        int? total = null;
+
+        foreach (var schema in definition.Elements("schema"))
+        {
+            if (Guid.TryParse(schema.Attribute("guid")?.Value, out var guid)
+                && schemaFieldCounts.TryGetValue(guid, out int fieldCount))
+            {
+                total = (total ?? 0) + fieldCount;
+            }
+        }
+
+        return total;
     }
 
     private static void AddAssignedSchemaEdges(
@@ -205,7 +261,7 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
 
         foreach (var field in fieldList)
         {
-            string fieldName = field.Attribute("column")?.Value ?? string.Empty;
+            string fieldName = ContentModelGraphFieldLabel.Resolve(field);
             var settings = field.Element("settings");
 
             foreach (var guid in ReadGuidList(settings?.Element("AllowedContentItemTypeIdentifiers")?.Value))
@@ -243,7 +299,7 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
         foreach (var field in fields.Where(field =>
             string.Equals(field.Attribute("columntype")?.Value, "taxonomy", StringComparison.OrdinalIgnoreCase)))
         {
-            string fieldName = field.Attribute("column")?.Value ?? string.Empty;
+            string fieldName = ContentModelGraphFieldLabel.Resolve(field);
             foreach (var guid in ReadGuidList(field.Element("settings")?.Element("TaxonomyGroup")?.Value).Where(taxonomyNames.ContainsKey))
             {
                 AddEdge(edges, nodeId, TaxonomyNodeId(guid), GraphEdgeKind.TAXONOMY_REFERENCE, fieldName);
@@ -516,6 +572,117 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
 
     private static string TaxonomyNodeId(Guid taxonomyGuid) => $"taxonomy:{taxonomyGuid}";
 
+    /// <summary>
+    /// The administration page a class node links to, and the application whose access governs that link.
+    /// Three destinations, not two: a content type is edited in the Content types application, a form class
+    /// belongs to a form authored in the Forms application, and everything left is an object type edited in
+    /// the Modules application.
+    /// </summary>
+    /// <remarks>
+    /// Form classes used to fall into the Modules branch, which sent the <i>Contact Us</i> form to a module
+    /// class definition rather than to its form builder. They are recognized here by the node kind that
+    /// <see cref="ResolveNodeKind" /> already resolved, so the two never disagree about what a form is.
+    /// </remarks>
+    /// <param name="classId">The class the node was built from.</param>
+    /// <param name="classResourceId">The module that owns the class, which addresses the Modules page.</param>
+    /// <param name="classType">The class type, which is what identifies a content type.</param>
+    /// <param name="nodeKind">
+    /// The node kind <see cref="ResolveNodeKind" /> gave this class, which is what identifies a form class.
+    /// </param>
+    /// <param name="formIdsByClassId">
+    /// The forms belonging to the graph's form classes, resolved once by <see cref="GetFormIdsByClassId" />.
+    /// A form class with no form in it - the Forms application cannot address one - yields no link rather
+    /// than a link that would not resolve.
+    /// </param>
+    /// <param name="applications">The applications the current user may open.</param>
+    internal string? GetClassAdminUrl(
+        int classId,
+        int classResourceId,
+        string? classType,
+        string nodeKind,
+        IReadOnlyDictionary<int, int> formIdsByClassId,
+        GraphApplicationAccess applications)
+    {
+        if (string.Equals(classType, CLASS_TYPE_CONTENT, StringComparison.OrdinalIgnoreCase))
+        {
+            return ContentModelGraphApplicationLinks.ForContentType(
+                applications,
+                () => AdminUrlHelper.EnsureAdminPrefix(pageLinkGenerator.GetPath<ContentTypeFields>(
+                    new PageParameterValues { { typeof(ContentTypeEditSection), classId } })));
+        }
+
+        if (string.Equals(nodeKind, GraphNodeKind.FORMS, StringComparison.OrdinalIgnoreCase))
+        {
+            return formIdsByClassId.TryGetValue(classId, out int formId)
+                ? ContentModelGraphApplicationLinks.ForForm(
+                    applications,
+                    () => ContentItemRelationshipGraphBuilder.GetFormAdminUrl(pageLinkGenerator, formId))
+                : null;
+        }
+
+        return ContentModelGraphApplicationLinks.ForObjectType(
+            applications,
+            () => AdminUrlHelper.EnsureAdminPrefix(pageLinkGenerator.GetPath<ClassFields>(
+                new PageParameterValues
+                {
+                    { typeof(ModuleEditSection), classResourceId },
+                    { typeof(ClassEditSection), classId }
+                })));
+    }
+
+    /// <summary>
+    /// The form each of the graph's form classes belongs to. This graph is built from classes, while the
+    /// Forms application addresses forms, so the link needs the inverse of the class lookup: one batched
+    /// query over every form-kind class rather than a query per node, in the style of the relationships
+    /// graph's tag URLs. A user who cannot open the Forms application gets no map and the query is skipped -
+    /// the form nodes keep their labels, just not their links.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<int, int>> GetFormIdsByClassId(
+        IEnumerable<DataClassInfo> classes,
+        IDictionary<int, string> systemResources,
+        bool isFormsApplicationAccessible)
+    {
+        if (!isFormsApplicationAccessible)
+        {
+            return new Dictionary<int, int>();
+        }
+
+        int[] formClassIds = [.. classes
+            .Where(dataClass => string.Equals(
+                ResolveNodeKind(dataClass, systemResources),
+                GraphNodeKind.FORMS,
+                StringComparison.OrdinalIgnoreCase))
+            .Select(dataClass => dataClass.ClassID)
+            .Distinct()];
+        if (formClassIds.Length == 0)
+        {
+            return new Dictionary<int, int>();
+        }
+
+        var forms = await bizFormInfoProvider.Get()
+            .Columns(nameof(BizFormInfo.FormID), nameof(BizFormInfo.FormClassID))
+            .WhereIn(nameof(BizFormInfo.FormClassID), formClassIds)
+            .GetEnumerableTypedResultAsync();
+
+        // A class backs at most one form, but grouping keeps a duplicated row from throwing rather than
+        // costing one node its link.
+        return forms
+            .GroupBy(form => form.FormClassID)
+            .ToDictionary(group => group.Key, group => group.First().FormID);
+    }
+
+    internal string? GetTaxonomyAdminUrl(int taxonomyId, GraphApplicationAccess applications) =>
+        ContentModelGraphApplicationLinks.ForTaxonomy(
+            applications,
+            () => AdminUrlHelper.EnsureAdminPrefix(pageLinkGenerator.GetPath<TaxonomyEdit>(
+                new PageParameterValues { { typeof(TaxonomyEditSection), taxonomyId } })));
+
+    internal string? GetReusableFieldSchemaAdminUrl(Guid schemaGuid, GraphApplicationAccess applications) =>
+        ContentModelGraphApplicationLinks.ForReusableFieldSchema(
+            applications,
+            () => AdminUrlHelper.EnsureAdminPrefix(pageLinkGenerator.GetPath<ReusableFieldSchemaFields>(
+                new PageParameterValues { { typeof(ReusableFieldSchemaEditSection), schemaGuid } })));
+
     private sealed class EdgeAccumulator
     {
         public string Id { get; set; } = string.Empty;
@@ -536,5 +703,75 @@ public sealed class ContentModelGraphBuilder(IInfoProvider<TaxonomyInfo> taxonom
             Kind = Kind,
             Label = string.Join(", ", Labels)
         };
+    }
+}
+
+/// <summary>
+/// Which application governs each administration link the content model graph emits, and so which flag of
+/// <see cref="GraphApplicationAccess" /> decides whether the link is offered at all. A denied application
+/// costs a node its link, not its label.
+/// </summary>
+/// <remarks>
+/// Reusable field schemas are not an application of their own: they are pages of the Content types
+/// application - <c>ReusableFieldSchemaList</c> is registered under <c>ContentTypesApplication</c> with the
+/// <c>reusable-field-schemas</c> slug, and the edit section and its fields tab hang off that list - so the
+/// same flag governs them as governs content types. Pinned by a guard test rather than assumed.
+/// Form classes are the other case worth naming: they are not Modules classes that happen to hold form
+/// data, they are the storage behind a form authored in the Forms application, so the Forms flag governs
+/// them and the Modules flag governs only what is left.
+/// Suppression goes through <see cref="ContentItemRelationshipGraphBuilder.GetApplicationLink" />, shared
+/// with the relationships graph rather than copied: it is what keeps a denied application from costing a
+/// page link generation per node, of which this graph has one for every content type, schema and taxonomy.
+/// </remarks>
+internal static class ContentModelGraphApplicationLinks
+{
+    internal static string? ForContentType(GraphApplicationAccess applications, Func<string> getAdminUrl) =>
+        ContentItemRelationshipGraphBuilder.GetApplicationLink(applications.ContentTypes, getAdminUrl);
+
+    internal static string? ForReusableFieldSchema(GraphApplicationAccess applications, Func<string> getAdminUrl) =>
+        ContentItemRelationshipGraphBuilder.GetApplicationLink(applications.ContentTypes, getAdminUrl);
+
+    internal static string? ForTaxonomy(GraphApplicationAccess applications, Func<string> getAdminUrl) =>
+        ContentItemRelationshipGraphBuilder.GetApplicationLink(applications.Taxonomy, getAdminUrl);
+
+    /// <summary>
+    /// A form class links to its form builder in the Forms application, where forms are authored - not to a
+    /// class definition in Modules, which is where the "everything that is not a content type" branch used
+    /// to send it.
+    /// </summary>
+    internal static string? ForForm(GraphApplicationAccess applications, Func<string> getAdminUrl) =>
+        ContentItemRelationshipGraphBuilder.GetApplicationLink(applications.Forms, getAdminUrl);
+
+    /// <summary>
+    /// Every remaining class is an object type, edited in the Modules application. Access to the application
+    /// is the whole gate - the individual class definitions within it are not separately governed.
+    /// </summary>
+    internal static string? ForObjectType(GraphApplicationAccess applications, Func<string> getAdminUrl) =>
+        ContentItemRelationshipGraphBuilder.GetApplicationLink(applications.Modules, getAdminUrl);
+}
+
+internal static class AdminUrlHelper
+{
+    public static string EnsureAdminPrefix(string path)
+    {
+        if (path.Equals("/admin", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("/admin/", StringComparison.OrdinalIgnoreCase))
+        {
+            return path;
+        }
+
+        return $"/admin/{path.TrimStart('/')}";
+    }
+}
+
+internal static class ContentModelGraphFieldLabel
+{
+    public static string Resolve(XElement field)
+    {
+        string? caption = field.Element("properties")?.Element("fieldcaption")?.Value;
+
+        return string.IsNullOrWhiteSpace(caption)
+            ? field.Attribute("column")?.Value ?? string.Empty
+            : caption;
     }
 }
