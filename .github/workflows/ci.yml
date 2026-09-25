@@ -66,6 +66,10 @@ jobs:
         working-directory: src/Kentico.Xperience.ContentModelGraph/Client
         run: npm run typecheck
 
+      - name: Test Admin client
+        working-directory: src/Kentico.Xperience.ContentModelGraph/Client
+        run: npm test
+
       - name: Test Solution
         run: |
           dotnet test `
