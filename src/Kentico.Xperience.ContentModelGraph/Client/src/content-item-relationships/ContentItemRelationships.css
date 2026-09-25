@@ -1,0 +1,402 @@
+@import "../shared/EdgeLabel.css";
+
+.cmg-relationships-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m, 12px);
+  height: calc(100vh - 160px);
+  min-width: 870px;
+  min-height: 520px;
+  padding: var(--spacing-l, 16px);
+  box-sizing: border-box;
+  font-family: var(--typeface-product-secondary, "Inter", sans-serif);
+  font-size: var(--font-size-m, 14px);
+  line-height: var(--line-l, 20px);
+  color: var(--color-text-default-on-light, #151515);
+}
+
+.cmg-relationships-canvas {
+  flex: 1 1 auto;
+  min-height: 0;
+  border: var(--border-width-default, 1px) var(--border-style-default, solid)
+    var(--color-paper-border, #dfdfdf);
+  border-radius: var(--radius-m, 8px);
+  background: var(--color-paper-background, #fff);
+  color: var(--color-text-default-on-light, #151515);
+  overflow: hidden;
+}
+
+.cmg-relationships-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-s, 8px);
+}
+
+.cmg-relationships-panel--filters {
+  align-items: flex-end;
+}
+
+.cmg-relationships-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+}
+
+.cmg-relationships-search {
+  width: 200px;
+  padding: var(--spacing-xs, 4px) var(--spacing-s, 8px);
+  box-sizing: border-box;
+  border: var(--border-width-default, 1px) var(--border-style-default, solid)
+    var(--color-input-border, #8c8c8c);
+  border-radius: var(--radius-s, 4px);
+  background: var(--color-paper-background, #fff);
+  color: var(--color-text-default-on-light, #151515);
+  font-family: inherit;
+  font-size: var(--font-size-s, 12px);
+}
+
+.cmg-relationships-search::placeholder {
+  color: var(--color-text-hint, #6f6f6f);
+}
+
+.cmg-relationships-search:focus {
+  outline: none;
+  border-color: var(--color-focus, #3d5dff);
+  box-shadow: var(--focus-default, 0 0 0 1px #fff, 0 0 0 3px #3d5dff);
+}
+
+.cmg-relationships-truncation {
+  align-items: center;
+  padding: var(--spacing-xs, 4px) var(--spacing-s, 8px);
+  border: var(--border-width-default, 1px) var(--border-style-default, solid)
+    var(--color-input-border, #8c8c8c);
+  border-radius: var(--radius-s, 4px);
+  background: var(--color-paper-background, #fff);
+  color: var(--color-text-low-emphasis, #525252);
+  font-size: var(--font-size-s, 12px);
+}
+
+.cmg-relationships-empty {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  color: var(--color-text-hint, #6f6f6f);
+  pointer-events: none;
+}
+
+.cmg-relationships__missing {
+  max-width: 600px;
+  margin: var(--spacing-xl, 24px) auto;
+  color: var(--color-text-low-emphasis, #525252);
+  text-align: center;
+}
+
+.cmg-relationships-node {
+  position: relative;
+  width: 280px;
+  padding: var(--spacing-s, 8px) var(--spacing-m, 12px);
+  box-sizing: border-box;
+  border: var(--border-width-default, 1px) var(--border-style-default, solid)
+    var(--color-paper-border, #dfdfdf);
+  border-left-width: var(--spacing-xs, 4px);
+  border-radius: var(--radius-m, 8px);
+  background: var(--color-paper-background, #fff);
+  box-shadow: var(--shadow-xs, 0 0 8px rgba(38, 38, 38, 0.03));
+  font-family: var(--typeface-product-secondary, "Inter", sans-serif);
+  color: var(--color-text-default-on-light, #151515);
+  transition: box-shadow var(--transition-duration-fast, 150ms)
+    var(--transition-timing-default, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+.cmg-relationships-node:hover {
+  box-shadow: var(
+    --shadow-s,
+    0 8px 14px rgba(38, 38, 38, 0.08),
+    0 0 8px rgba(38, 38, 38, 0.03)
+  );
+}
+
+.cmg-relationships-node--root {
+  border-width: var(--border-width-default, 1px);
+  border-left-width: var(--spacing-xs, 4px);
+  border-color: var(--color-focus, #3d5dff);
+  box-shadow: var(
+    --shadow-s,
+    0 8px 14px rgba(38, 38, 38, 0.08),
+    0 0 8px rgba(38, 38, 38, 0.03)
+  );
+}
+
+.cmg-relationships-node__current {
+  margin: calc(-1 * var(--spacing-s, 8px)) calc(-1 * var(--spacing-m, 12px))
+    var(--spacing-s, 8px);
+  padding: 2px var(--spacing-m, 12px);
+  border-top-right-radius: var(--radius-m, 8px);
+  background: var(--color-focus, #3d5dff);
+  color: #fff;
+  font-size: var(--font-size-xs, 11px);
+  font-weight: var(--weight-semibold, 600);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.cmg-relationships-node--dimmed {
+  opacity: 0.25;
+}
+
+/* The item no longer exists - the metadata is kept so the broken reference stays diagnosable. */
+.cmg-relationships-node--missing {
+  border-style: var(--border-style-dashed, dashed);
+  border-left-style: var(--border-style-default, solid);
+  background: var(--color-background-subtle, #f5f5f5);
+}
+
+.cmg-relationships-node__missing {
+  display: flex;
+  margin-top: var(--spacing-xs, 4px);
+}
+
+.cmg-relationships-node__expand-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-s, 8px);
+  margin-top: var(--spacing-s, 8px);
+  padding-top: var(--spacing-s, 8px);
+  border-top: var(--border-width-default, 1px)
+    var(--border-style-default, solid) var(--color-divider-default, #dfdfdf);
+}
+
+.cmg-relationships-node__expand {
+  flex: 1 1 0;
+}
+
+.cmg-relationships-node__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-s, 8px);
+}
+
+.cmg-relationships-node__fallback {
+  display: inline-block;
+  margin-top: var(--spacing-xs, 4px);
+  padding: 1px var(--spacing-xs, 4px);
+  border: var(--border-width-default, 1px) var(--border-style-default, solid)
+    var(--color-paper-border, #dfdfdf);
+  border-radius: var(--radius-s, 4px);
+  background: var(--color-paper-background, #fff);
+  color: var(--color-text-low-emphasis, #525252);
+  font-size: var(--font-size-xs, 11px);
+  line-height: var(--line-m, 16px);
+  font-weight: var(--weight-semibold, 600);
+}
+
+.cmg-relationships-node__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--font-size-m, 14px);
+  font-weight: var(--weight-semibold, 600);
+  line-height: var(--line-l, 20px);
+}
+
+.cmg-relationships-node__facts {
+  display: grid;
+  gap: var(--spacing-xs, 4px);
+  margin: var(--spacing-s, 8px) 0 0;
+}
+
+.cmg-relationships-node__fact {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: var(--spacing-s, 8px);
+  font-size: var(--font-size-s, 12px);
+  line-height: var(--line-m, 16px);
+}
+
+.cmg-relationships-node__fact dt {
+  color: var(--color-text-low-emphasis, #525252);
+}
+
+.cmg-relationships-node__fact dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.cmg-relationships-node__location-kind {
+  margin-left: var(--spacing-xs, 4px);
+  color: var(--color-text-low-emphasis, #525252);
+}
+
+.cmg-relationships-node__location-kind::before {
+  content: "· ";
+}
+
+.cmg-relationships-node__code {
+  margin-top: var(--spacing-s, 8px);
+  overflow-wrap: anywhere;
+  font-family: var(--typeface-monospace, monospace);
+  font-size: var(--font-size-s, 12px);
+  color: var(--color-text-low-emphasis, #525252);
+}
+
+.cmg-relationships-node__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-m, 12px);
+  margin-top: var(--spacing-s, 8px);
+  padding-top: var(--spacing-s, 8px);
+  border-top: var(--border-width-default, 1px)
+    var(--border-style-default, solid) var(--color-divider-default, #dfdfdf);
+  font-size: var(--font-size-s, 12px);
+}
+
+/*
+ * The link stand-in shown for an item the current user may not read. The platform's "Used in" tab renders
+ * the action disabled rather than omitting it, so a reader can tell "there is no link here" apart from
+ * "you may not open this"; the tooltip carries the reason, and the icon beside it carries the same state
+ * at a glance - it replaces the "Restricted" tag this node used to grow an extra row for.
+ */
+.cmg-relationships-node__action--disabled {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs, 4px);
+  cursor: not-allowed;
+  color: var(--color-text-disabled, #a3a3a3);
+}
+
+/*
+ * The icon is 1em square, so at the row's own font size it stays shorter than the text it sits beside and
+ * cannot make the actions row taller - estimateRelationshipNodeHeight still bills that row a flat 40px.
+ */
+.cmg-relationships-node__action-icon {
+  display: inline-flex;
+  flex: none;
+  font-size: var(--font-size-s, 12px);
+}
+
+/* The underline belongs to the words, not to the icon: a dotted rule under both would read as one link. */
+.cmg-relationships-node__action-text {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+/*
+ * Edge labels are rendered as HTML through EdgeLabelRenderer rather than as SVG text, so a Page Builder
+ * reference can carry its full path (area, section, widget, personalization variant) as a tooltip.
+ * EdgeLabelRenderer disables pointer events on its container, so the label re-enables them for the title.
+ */
+/*
+ * The chip box itself is `.cmg-edge-label` in ../shared/EdgeLabel.css, which both graphs draw and which
+ * the Dagre reservation in edgeLabel.ts is sized from. Everything below is what only this graph needs:
+ * several references merged onto one chip, and a reference to an item that no longer exists.
+ */
+
+/*
+ * One reference on the chip. Two edges between the same pair of nodes are drawn as the same curve, so they
+ * are merged into one edge and each reference becomes an entry here rather than a chip of its own.
+ */
+.cmg-relationships-edge-label__entry {
+  /*
+   * Wrapping comes from `.cmg-edge-label__line`, which clamps one run of text to the two lines
+   * EDGE_LABEL_MAX_LINES_PER_SEGMENT reserves. An entry here gets twice that: a Page Builder label carries
+   * a forced break between the component and its personalization variant, and needs the budget for both
+   * segments, or a long type name on the first line would push the variant out of a two-line clamp and
+   * clip it silently. So the clamp never cuts off anything the layout made room for. The clamp is per
+   * entry, and the number of entries is capped separately, so a merged chip cannot swallow one reference
+   * to fit another.
+   */
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+
+/*
+ * A Page Builder entry is already two lines, so merged entries run together without a rule between them -
+ * there would be no telling whether a `Variant:` line belongs to the widget above it or to the next entry.
+ * Only entries after the first get one, so a single-reference chip looks exactly as it always has. Kept in
+ * sync with EDGE_LABEL_ENTRY_SEPARATOR_HEIGHT in RelationshipEdge.tsx, which is what the layout reserves.
+ */
+.cmg-relationships-edge-label__entry + .cmg-relationships-edge-label__entry {
+  margin-top: 3px;
+  padding-top: 3px;
+  border-top: var(--border-width-default, 1px) var(--border-style-default, solid)
+    var(--color-divider-default, #dfdfdf);
+}
+
+/* The count of references the chip had no room for. The tooltip spells every one of them out. */
+.cmg-relationships-edge-label__overflow {
+  color: var(--color-text-hint, #6f6f6f);
+}
+
+/* A reference to a deleted item - muted and dashed so it stays de-emphasised next to a live label. */
+.cmg-relationships-edge-label--missing {
+  border-style: var(--border-style-dashed, dashed);
+  background: var(--color-background-subtle, #f5f5f5);
+  color: var(--color-text-hint, #6f6f6f);
+  font-style: italic;
+}
+
+/*
+ * EdgeLabelRenderer's container ships with no z-index, so a label lands in the same paint layer as the
+ * nodes and a node drawn later can clip it. ReactFlow gives node wrappers an inline z-index of 0, raised
+ * to 1000 while selected or dragged, so labels sit just above that - the same value ReactFlow itself uses
+ * for the connection line. The viewport is its own stacking context, so this stays below the panels.
+ */
+.cmg-relationships-canvas .react-flow__edgelabel-renderer {
+  z-index: 1001;
+}
+
+.cmg-relationships-canvas .react-flow__handle {
+  border-color: var(--color-border-low-emphasis, #dfdfdf);
+  background: var(--palette-grey-40, #a8a8a8);
+}
+
+.cmg-relationships-canvas .react-flow__controls-button {
+  border-bottom-color: var(--color-divider-default, #dfdfdf);
+  background: var(--color-paper-background, #fff);
+  fill: var(--color-icon-default, #151515);
+}
+
+.cmg-relationships-canvas .react-flow__controls-button:hover {
+  background: var(--color-background-subtle, #f5f5f5);
+}
+
+.cmg-relationships-canvas .react-flow__minimap {
+  border: var(--border-width-default, 1px) var(--border-style-default, solid)
+    var(--color-paper-border, #dfdfdf);
+  border-radius: var(--radius-s, 4px);
+  background: var(--color-paper-background, #fff);
+}
+
+/*
+ * The minimap and the toggle that shows it share the bottom-right corner: the toggle stays docked in the
+ * corner, the map stacks above it. ReactFlow panels are positioned against the canvas rather than each
+ * other, so the map clears the toggle through its own bottom margin - ReactFlow's 15px panel margin, then
+ * the toggle (a 24px XS button in a 2px padded, 1px bordered surface) and a gap. The map's own size lives
+ * in MINIMAP_STYLE, which ContentItemRelationshipsTemplate.tsx has to pass as a style prop for the svg to
+ * scale with it.
+ */
+.cmg-relationships-canvas .react-flow__minimap.cmg-relationships-minimap {
+  margin-bottom: calc(15px + 30px + var(--spacing-s, 8px));
+}
+
+/* Docked on the canvas, so the button needs a surface of its own to stay legible over the graph. */
+.cmg-relationships-minimap-toggle {
+  padding: 2px;
+  border: var(--border-width-default, 1px) var(--border-style-default, solid)
+    var(--color-paper-border, #dfdfdf);
+  border-radius: var(--radius-s, 4px);
+  background: var(--color-paper-background, #fff);
+  box-shadow: var(--shadow-xs, 0 0 8px rgba(38, 38, 38, 0.03));
+}
+
+.cmg-relationships-canvas .react-flow__attribution {
+  background: transparent;
+  color: var(--color-text-hint, #6f6f6f);
+}
+
+.cmg-relationships-canvas .react-flow__attribution a {
+  color: var(--color-text-hint, #6f6f6f);
+}

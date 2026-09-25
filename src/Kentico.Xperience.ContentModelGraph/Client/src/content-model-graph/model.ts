@@ -28,9 +28,15 @@ export interface GraphNodeDto {
   readonly id: string;
   readonly name: string;
   readonly displayName: string;
+  readonly adminUrl?: string;
   readonly kind: NodeKind;
   readonly systemObjectTypeGroup?: SystemObjectTypeGroup;
   readonly fieldCount: number;
+  /**
+   * Fields contributed by the node's assigned reusable field schemas. Absent (or null)
+   * when the node has no assigned schemas.
+   */
+  readonly schemaFieldCount?: number | null;
 }
 
 export interface GraphEdgeDto {
@@ -44,6 +50,12 @@ export interface GraphEdgeDto {
 export interface GraphDataDto {
   readonly nodes: readonly GraphNodeDto[];
   readonly edges: readonly GraphEdgeDto[];
+  /**
+   * The node the graph was filtered down to, which the contextual content type, reusable field schema and
+   * taxonomy pages set and which is marked as the current item. Absent (or null) on the whole-model graph,
+   * which has no focal node.
+   */
+  readonly focalNodeId?: string | null;
 }
 
 export const nodeKinds: ReadonlyArray<{
