@@ -166,7 +166,14 @@ public sealed class ContentItemRelationshipGraphBuilder(
                 fieldValues,
                 rootCommonData?.ContentItemCommonDataVisualBuilderWidgets,
                 rootCommonData?.ContentItemCommonDataVisualBuilderTemplateConfiguration);
-            AddRelationships(outgoing, MapItem(reference.ContentItemReferenceTargetItemID), reference.ContentItemReferenceGroupGUID, "outgoing", fields);
+            AddRelationships(
+                outgoing,
+                MapItem(reference.ContentItemReferenceTargetItemID),
+                itemId,
+                reference.ContentItemReferenceTargetItemID,
+                reference.ContentItemReferenceGroupGUID,
+                "outgoing",
+                fields);
         }
         outgoing.AddRange(await GetTaxonomyRelationships(rootItem, fieldsByType, fieldValues, language.Selected.Name, applications));
         outgoing.AddRange(await GetFormRelationships(rootCommonData, applications));
@@ -190,7 +197,14 @@ public sealed class ContentItemRelationshipGraphBuilder(
                 fieldValues,
                 sourceCommonData.ContentItemCommonDataVisualBuilderWidgets,
                 sourceCommonData.ContentItemCommonDataVisualBuilderTemplateConfiguration);
-            AddRelationships(incoming, MapItem(sourceItemId), reference.ContentItemReferenceGroupGUID, "incoming", fields);
+            AddRelationships(
+                incoming,
+                MapItem(sourceItemId),
+                sourceItemId,
+                itemId,
+                reference.ContentItemReferenceGroupGUID,
+                "incoming",
+                fields);
         }
 
         return new ContentItemRelationshipGraph
@@ -358,13 +372,21 @@ public sealed class ContentItemRelationshipGraphBuilder(
             // unlabelled edge rather than disappearing from the graph.
             if (sources.Count == 0)
             {
-                incoming.Add(CreateRelationship(item, $"incoming:{itemId}:form:{form.FormGUID:D}", "incoming", null));
+                incoming.Add(CreateRelationship(
+                    item,
+                    CreateFormRelationshipId(itemId, form.FormGUID, null),
+                    "incoming",
+                    null));
                 continue;
             }
 
             foreach (var source in sources)
             {
-                incoming.Add(CreateRelationship(item, $"incoming:{itemId}:form:{form.FormGUID:D}:{source.CodeName}", "incoming", source));
+                incoming.Add(CreateRelationship(
+                    item,
+                    CreateFormRelationshipId(itemId, form.FormGUID, source.CodeName),
+                    "incoming",
+                    source));
             }
         }
 
@@ -879,7 +901,7 @@ public sealed class ContentItemRelationshipGraphBuilder(
                         Kind = GraphNodeKind.TAXONOMY,
                         AdminUrl = tagAdminUrls.GetValueOrDefault(tag.Identifier)
                     },
-                    $"outgoing:taxonomy:{selection.Field.Name}:{tag.Identifier:D}",
+                    CreateTaxonomyRelationshipId(rootItem.ContentItemID, tag.Identifier, selection.Field.Name),
                     "outgoing",
                     new RelationshipFieldSource(selection.Field.GetDisplayName(null) ?? selection.Field.Name, selection.Field.Name));
             })
@@ -939,7 +961,11 @@ public sealed class ContentItemRelationshipGraphBuilder(
 
             foreach (var source in CreatePageBuilderFieldSources(group.Select(reference => (reference.Path, reference.PropertyName))))
             {
-                relationships.Add(CreateRelationship(item, $"outgoing:form:{form.FormGUID:D}:{source.CodeName}", "outgoing", source));
+                relationships.Add(CreateRelationship(
+                    item,
+                    CreateFormRelationshipId(rootCommonData.ContentItemCommonDataContentItemID, form.FormGUID, source.CodeName),
+                    "outgoing",
+                    source));
             }
         }
 
@@ -1186,24 +1212,125 @@ public sealed class ContentItemRelationshipGraphBuilder(
                 .First())
             .ToList();
 
-    private static void AddRelationships(
+    /// <summary>
+    /// Adds the edges for one content item reference: one per field the reference could be placed in, or a
+    /// single unlabelled edge when it could be placed in none. The two items are taken separately from the node
+    /// because the node is only the far end of the edge, and an edge is not identified by its far end alone -
+    /// see <see cref="CreateRelationshipId" />.
+    /// </summary>
+    /// <param name="relationships">The list the edges are appended to.</param>
+    /// <param name="item">The node at the far end of the edge - whichever of the two items is not the root.</param>
+    /// <param name="sourceItemId">The referencing item: the one whose field holds the reference.</param>
+    /// <param name="targetItemId">The referenced item.</param>
+    /// <param name="referenceGroupGuid">The reference group the selection belongs to.</param>
+    /// <param name="direction">The direction the edge has relative to the graph's root.</param>
+    /// <param name="sources">The fields the reference was matched to, empty when none could be placed.</param>
+    internal static void AddRelationships(
         ICollection<ContentItemRelationship> relationships,
         ContentItemRelationshipItem item,
+        int sourceItemId,
+        int targetItemId,
         Guid referenceGroupGuid,
         string direction,
         IReadOnlyList<RelationshipFieldSource> sources)
     {
         if (sources.Count == 0)
         {
-            relationships.Add(CreateRelationship(item, $"{direction}:{item.ItemId}:{referenceGroupGuid:D}", direction, null));
+            relationships.Add(CreateRelationship(
+                item,
+                CreateReferenceRelationshipId(sourceItemId, targetItemId, referenceGroupGuid, null),
+                direction,
+                null));
             return;
         }
 
         foreach (var source in sources)
         {
-            relationships.Add(CreateRelationship(item, $"{direction}:{item.ItemId}:{referenceGroupGuid:D}:{source.CodeName}", direction, source));
+            relationships.Add(CreateRelationship(
+                item,
+                CreateReferenceRelationshipId(sourceItemId, targetItemId, referenceGroupGuid, source.CodeName),
+                direction,
+                source));
         }
     }
+
+    /// <summary>
+    /// Separates the two ends of a <see cref="ContentItemRelationship.Id" />. The arrow always points from the
+    /// referencing end to the referenced one - never outwards from the graph's root - so one relationship reads
+    /// the same way whichever of its two ends the reader expanded.
+    /// </summary>
+    private const string ENDPOINT_SEPARATOR = "=>";
+
+    /// <summary>
+    /// Builds a relationship identifier that is unique within a response and stable across responses.
+    /// </summary>
+    /// <remarks>
+    /// Both ends are encoded, because one end plus a field or a reference group does not identify a
+    /// relationship. A reference group spans every item selected in one field, a tag is shared by every item
+    /// carrying it, and a form is shared by every page embedding it, so the earlier scheme - which named only
+    /// the far end, and for tags and forms named no item at all - handed the same identifier to different
+    /// relationships as soon as two expansions were merged into one graph.
+    /// <para>
+    /// Nothing request-scoped goes in. Every segment is a property of the stored relationship: the two endpoint
+    /// identifiers, the reference group GUID and the field code name. The same relationship therefore carries
+    /// the same identifier in every response - including a response rooted at its other end - so two exports
+    /// can be diffed by identifier.
+    /// </para>
+    /// <para>
+    /// The direction is deliberately not part of the identifier. Once both ends are written in reference order,
+    /// <c>item:12=&gt;item:34</c> and <c>item:34=&gt;item:12</c> already tell the two directions of a pair
+    /// apart; a direction prefix would only re-state which end the reader happened to start from, which is a
+    /// property of the request rather than of the relationship, and it is what previously gave one relationship
+    /// two identifiers depending on where it was seen from. Direction stays on
+    /// <see cref="ContentItemRelationship.Direction" />, where it belongs.
+    /// </para>
+    /// </remarks>
+    internal static string CreateRelationshipId(
+        RelationshipEndpoint source,
+        RelationshipEndpoint target,
+        string? referenceGroup,
+        string? fieldCodeName) =>
+        $"{source}{ENDPOINT_SEPARATOR}{target}{Qualifier(referenceGroup)}{Qualifier(fieldCodeName)}";
+
+    private static string Qualifier(string? value) => string.IsNullOrEmpty(value) ? string.Empty : $":{value}";
+
+    /// <summary>
+    /// The identifier of a content item reference: the referencing item, the referenced item, the reference
+    /// group the two were selected in and the field that group belongs to.
+    /// </summary>
+    internal static string CreateReferenceRelationshipId(
+        int sourceItemId,
+        int targetItemId,
+        Guid referenceGroupGuid,
+        string? fieldCodeName) =>
+        CreateRelationshipId(
+            RelationshipEndpoint.Item(sourceItemId),
+            RelationshipEndpoint.Item(targetItemId),
+            referenceGroupGuid.ToString("D"),
+            fieldCodeName);
+
+    /// <summary>
+    /// The identifier of a taxonomy tag selection. A tag selection has no reference group, so the tagged item
+    /// and the field it was selected in are what separate one selection of a shared tag from another.
+    /// </summary>
+    internal static string CreateTaxonomyRelationshipId(int sourceItemId, Guid tagIdentifier, string fieldCodeName) =>
+        CreateRelationshipId(
+            RelationshipEndpoint.Item(sourceItemId),
+            RelationshipEndpoint.Tag(tagIdentifier),
+            null,
+            fieldCodeName);
+
+    /// <summary>
+    /// The identifier of a form embedded in a content item's Page Builder configuration. Shared by both graphs
+    /// that can show the edge: the item-rooted graph and the form-rooted graph describe the same relationship,
+    /// so they hand it the same identifier.
+    /// </summary>
+    internal static string CreateFormRelationshipId(int sourceItemId, Guid formGuid, string? fieldCodeName) =>
+        CreateRelationshipId(
+            RelationshipEndpoint.Item(sourceItemId),
+            RelationshipEndpoint.Form(formGuid),
+            null,
+            fieldCodeName);
 
     private static ContentItemRelationship CreateRelationship(
         ContentItemRelationshipItem item,
@@ -1414,6 +1541,24 @@ public sealed class ContentItemRelationshipGraphBuilder(
     /// that come from a content type field, which have no path beyond the field itself.
     /// </param>
     internal sealed record RelationshipFieldSource(string Label, string CodeName, string? Path = null);
+
+    /// <summary>
+    /// One end of a <see cref="ContentItemRelationship.Id" />: a kind, and the identifier that is stable for
+    /// that kind - the numeric content item ID for an item, the GUID for a tag or a form. Written as
+    /// <c>item:12</c>, <c>tag:{guid}</c> or <c>form:{guid}</c>.
+    /// </summary>
+    /// <param name="Kind">The kind of thing at this end, which is also what the identifier means.</param>
+    /// <param name="Identifier">The identifier, already formatted for the id.</param>
+    internal readonly record struct RelationshipEndpoint(string Kind, string Identifier)
+    {
+        internal static RelationshipEndpoint Item(int contentItemId) => new("item", $"{contentItemId}");
+
+        internal static RelationshipEndpoint Tag(Guid identifier) => new("tag", identifier.ToString("D"));
+
+        internal static RelationshipEndpoint Form(Guid identifier) => new("form", identifier.ToString("D"));
+
+        public override string ToString() => $"{Kind}:{Identifier}";
+    }
 }
 
 internal static class RelationshipFieldMatcher

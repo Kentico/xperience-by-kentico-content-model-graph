@@ -2,10 +2,12 @@
 
 root = true
 
-# Windows developers can enable autocrlf to checkout in crlf and commit in lf
-# git config --global core.autocrlf true
+# Line endings are settled by .gitattributes (* text=auto eol=lf), so no local
+# core.autocrlf setting is needed - or wanted, since a CRLF working tree fails
+# the dotnet format check CI gates on.
 
 [*.cs]
+charset                                                                   = utf-8
 end_of_line                                                               = lf
 indent_size                                                               = 4
 indent_style                                                              = space

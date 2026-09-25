@@ -38,8 +38,19 @@ import {
   type RelationshipEdge,
 } from "./RelationshipEdge";
 import { nodeColor, type NodeKind } from "../content-model-graph/model";
+import {
+  expandKey,
+  initialEdges,
+  initialItems,
+  itemNodeId,
+  markItemMissing,
+  mergeExpandedEdges,
+  mergeExpandedItems,
+  mergeRelationshipEdgeRecords,
+  visibleRelationshipGraph,
+  type RelationshipEdgeRecord,
+} from "./relationshipGraphState";
 import type {
-  ContentItemRelationshipDto,
   ContentItemRelationshipGraphDto,
   ContentItemRelationshipItemDto,
   ContentItemRelationshipTruncationDto,
@@ -51,18 +62,6 @@ interface ContentItemRelationshipsTemplateProps {
 
 interface ExpandRelationshipsArgs {
   readonly itemId: number;
-}
-
-interface RelationshipEdgeRecord {
-  readonly id: string;
-  readonly source: string;
-  readonly target: string;
-  readonly label: string;
-  // The field the reference was found on, independent of how the edge is labelled. Layout groups the
-  // nodes reached through one field together, so it needs the field itself rather than its label.
-  readonly field: string;
-  readonly path?: string | null;
-  readonly origin: string;
 }
 
 const nodeTypes = { relationshipNode: RelationshipNodeComponent };
@@ -100,23 +99,6 @@ const minimapNodeColor = (node: RelationshipNode) =>
 // `style.width`/`style.height` to scale the svg and its viewBox, so sizing it in CSS alone would leave it
 // drawing a 200x150 map inside a smaller box.
 const MINIMAP_STYLE = { width: 140, height: 105 };
-
-const itemNodeId = (item: ContentItemRelationshipItemDto) =>
-  item.identifier ?? item.itemId?.toString() ?? item.codeName;
-
-const expandKey = (nodeId: string, direction: RelationshipExpandDirection) =>
-  `${nodeId}:${direction}`;
-
-// The field a relationship was found on. The code name is the stable one - a Page Builder property keeps
-// the same code name across personalization variants while its label spells the variants out - so it wins
-// wherever one is available, and the label is the fallback for sources that carry no code name.
-const relationshipField = (relationship: ContentItemRelationshipDto) =>
-  relationship.fieldCodeName || relationship.fieldLabel;
-
-// Same reference can be discovered from either endpoint's fetch with a different relationship id,
-// so edges are deduplicated by their actual endpoints and field rather than that id.
-const edgeContentKey = (source: string, target: string, field: string) =>
-  `${source}=>${target}:${field}`;
 
 const truncationDirectionLabel = (direction: string) =>
   direction === "incoming" ? "referencing items" : "referenced items";
@@ -412,55 +394,6 @@ const layout = (
   });
 };
 
-const initialItems = (graph: ContentItemRelationshipGraphDto) => {
-  const items = new Map<string, ContentItemRelationshipItemDto>();
-  items.set(itemNodeId(graph.rootItem), graph.rootItem);
-
-  for (const relationship of [
-    ...(graph.incoming ?? []),
-    ...(graph.outgoing ?? []),
-  ]) {
-    items.set(itemNodeId(relationship.relatedItem), relationship.relatedItem);
-  }
-
-  return items;
-};
-
-const initialEdges = (graph: ContentItemRelationshipGraphDto) => {
-  const rootId = itemNodeId(graph.rootItem);
-  const edges = new Map<string, RelationshipEdgeRecord>();
-
-  for (const relationship of graph.incoming ?? []) {
-    const source = itemNodeId(relationship.relatedItem);
-    const field = relationshipField(relationship);
-    edges.set(edgeContentKey(source, rootId, field), {
-      id: relationship.id,
-      source,
-      target: rootId,
-      label: relationship.fieldLabel || relationship.fieldCodeName,
-      field,
-      path: relationship.fieldPath,
-      origin: expandKey(rootId, "incoming"),
-    });
-  }
-
-  for (const relationship of graph.outgoing ?? []) {
-    const target = itemNodeId(relationship.relatedItem);
-    const field = relationshipField(relationship);
-    edges.set(edgeContentKey(rootId, target, field), {
-      id: relationship.id,
-      source: rootId,
-      target,
-      label: relationship.fieldLabel || relationship.fieldCodeName,
-      field,
-      path: relationship.fieldPath,
-      origin: expandKey(rootId, "outgoing"),
-    });
-  }
-
-  return edges;
-};
-
 const createTimestamp = (date: Date) => {
   const parts = [date.getFullYear(), date.getMonth() + 1, date.getDate()];
   const time = [date.getHours(), date.getMinutes(), date.getSeconds()];
@@ -483,7 +416,7 @@ const exportJson = (
   rootItem: ContentItemRelationshipItemDto,
   rootId: string,
   items: ReadonlyMap<string, ContentItemRelationshipItemDto>,
-  edgeRecords: ReadonlyMap<string, RelationshipEdgeRecord>,
+  edgeRecords: readonly RelationshipEdgeRecord[],
   languageCode: string | null,
 ) => {
   const payload = {
@@ -493,7 +426,7 @@ const exportJson = (
     languageCode,
     rootItem,
     items: [...items.values()],
-    edges: [...edgeRecords.values()].map((record) => ({
+    edges: edgeRecords.map((record) => ({
       id: record.id,
       source: record.source,
       target: record.target,
@@ -533,26 +466,20 @@ const ContentItemRelationshipsGraph = ({
   const [minimapExpanded, setMinimapExpanded] = useState(false);
   const rootId = useMemo(() => itemNodeId(graph.rootItem), [graph.rootItem]);
 
-  const [items, setItems] = useState(() => initialItems(graph));
-  const [edgeRecords, setEdgeRecords] = useState(() => initialEdges(graph));
-  const visibleItems = useMemo(() => {
-    const visible = new Map<string, ContentItemRelationshipItemDto>();
-    const rootItem = items.get(rootId);
-    if (rootItem) {
-      visible.set(rootId, rootItem);
-    }
-
-    for (const record of edgeRecords.values()) {
-      for (const id of [record.source, record.target]) {
-        const item = items.get(id);
-        if (item) {
-          visible.set(id, item);
-        }
-      }
-    }
-
-    return visible;
-  }, [items, edgeRecords, rootId]);
+  // Held as read-only maps: every transition replaces them through the helpers in `relationshipGraphState`,
+  // and a map mutated in place would not re-render anything that reads it.
+  const [items, setItems] = useState<
+    ReadonlyMap<string, ContentItemRelationshipItemDto>
+  >(() => initialItems(graph));
+  const [edgeRecords, setEdgeRecords] = useState<
+    ReadonlyMap<string, RelationshipEdgeRecord>
+  >(() => initialEdges(graph));
+  // The nodes and the edges the canvas draws come out of one derivation, so neither can outlive the other:
+  // no node left hanging with no edge, no edge left hanging with no node.
+  const { visibleItems, visibleRecords } = useMemo(
+    () => visibleRelationshipGraph(items, edgeRecords, rootId),
+    [items, edgeRecords, rootId],
+  );
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(
     () =>
       new Set([expandKey(rootId, "incoming"), expandKey(rootId, "outgoing")]),
@@ -575,14 +502,7 @@ const ContentItemRelationshipsGraph = ({
       // The item was deleted after the graph was rendered. Flag the node so it renders as missing
       // and stops offering expansion, keeping the metadata and edges already discovered for it.
       if (response.rootItem?.isMissing) {
-        setItems((current) => {
-          const existing = current.get(nodeId);
-          if (!existing || existing.isMissing) {
-            return current;
-          }
-
-          return new Map(current).set(nodeId, { ...existing, isMissing: true });
-        });
+        setItems((current) => markItemMissing(current, nodeId));
         return;
       }
 
@@ -591,42 +511,10 @@ const ContentItemRelationshipsGraph = ({
           ? (response.incoming ?? [])
           : (response.outgoing ?? []);
 
-      setItems((current) => {
-        const next = new Map(current);
-        for (const relationship of relationships) {
-          next.set(
-            itemNodeId(relationship.relatedItem),
-            relationship.relatedItem,
-          );
-        }
-        return next;
-      });
-
-      setEdgeRecords((current) => {
-        const next = new Map(current);
-        for (const [contentKey, record] of current) {
-          if (record.origin === key) {
-            next.delete(contentKey);
-          }
-        }
-        for (const relationship of relationships) {
-          const relatedId = itemNodeId(relationship.relatedItem);
-          const source = direction === "incoming" ? relatedId : nodeId;
-          const target = direction === "incoming" ? nodeId : relatedId;
-          const field = relationshipField(relationship);
-          next.set(edgeContentKey(source, target, field), {
-            id: relationship.id,
-            source,
-            target,
-            label: relationship.fieldLabel || relationship.fieldCodeName,
-            field,
-            path: relationship.fieldPath,
-            origin: key,
-          });
-        }
-        return next;
-      });
-
+      setItems((current) => mergeExpandedItems(current, relationships));
+      setEdgeRecords((current) =>
+        mergeExpandedEdges(current, nodeId, direction, relationships),
+      );
       setExpanded((current) => new Set(current).add(key));
     },
     [],
@@ -708,47 +596,22 @@ const ContentItemRelationshipsGraph = ({
   );
 
   const { layoutedNodes, layoutedEdges } = useMemo(() => {
-    // Records are keyed by endpoints *and* field, so the same page referencing the same item from its page
-    // template and from a widget produces two records between the same pair of nodes. Two edges with the
-    // same endpoints are drawn as the same curve, one exactly on top of the other, and so are their labels,
-    // which is unreadable and has no repositioning that fixes it - a curve has one sensible place for a
-    // label. They are merged into one edge whose chip names every reference instead. Nothing is lost: same
-    // source, same target, every field still stated; only a stroke nobody could see goes away.
-    // Sort by id so layout is deterministic regardless of Map mutation order from expand/refresh.
-    const mergedRecords = new Map<string, RelationshipEdgeRecord[]>();
-    for (const record of Array.from(edgeRecords.values()).sort((a, b) =>
-      a.id.localeCompare(b.id),
-    )) {
-      const key = `${record.source}=>${record.target}`;
-      const existing = mergedRecords.get(key);
+    const mergedEdges = mergeRelationshipEdgeRecords(visibleRecords);
 
-      if (existing) {
-        existing.push(record);
-      } else {
-        mergedRecords.set(key, [record]);
-      }
-    }
-
-    const flowEdges: RelationshipEdge[] = Array.from(
-      mergedRecords.values(),
-    ).map((records) => {
-      // The lowest-id record speaks for the merged edge: its id keeps the edge identifiable across
-      // renders, and its field is the one a merged edge is grouped by. That is the same record
-      // `preferredAnchor` used to settle on when these were separate edges, so the node ordering within a
-      // rank comes out unchanged.
-      const [primary] = records;
+    const flowEdges: RelationshipEdge[] = mergedEdges.map((merged) => {
+      const { id, source, target, records } = merged;
       // An edge touching a deleted item is a broken reference, so it is muted and dashed. Merged records
       // share both endpoints, so they are broken or whole together - there is no mixed case to resolve.
       const broken =
-        items.get(primary.source)?.isMissing === true ||
-        items.get(primary.target)?.isMissing === true;
+        visibleItems.get(source)?.isMissing === true ||
+        visibleItems.get(target)?.isMissing === true;
       const color = broken ? MISSING_COLOR : REFERENCE_EDGE_COLOR;
 
       return {
-        id: primary.id,
+        id,
         type: "relationshipEdge" as const,
-        source: primary.source,
-        target: primary.target,
+        source,
+        target,
         data: {
           // Hiding labels empties the entries rather than only skipping the chip. The same entries are
           // what `layout` measures to reserve label space in Dagre, so an empty list drops the chip and
@@ -799,20 +662,14 @@ const ContentItemRelationshipsGraph = ({
       layoutedNodes: layout(
         flowNodes,
         flowEdges,
-        new Map(
-          Array.from(mergedRecords.values()).map(([primary]) => [
-            primary.id,
-            primary.field,
-          ]),
-        ),
+        new Map(mergedEdges.map((merged) => [merged.id, merged.field])),
         direction,
       ),
       layoutedEdges: flowEdges,
     };
   }, [
-    items,
     visibleItems,
-    edgeRecords,
+    visibleRecords,
     rootId,
     expandStatus,
     handleExpand,
@@ -908,7 +765,7 @@ const ContentItemRelationshipsGraph = ({
                       items.get(rootId) ?? graph.rootItem,
                       rootId,
                       visibleItems,
-                      edgeRecords,
+                      visibleRecords,
                       graph.languageCode ?? null,
                     )
                   }
