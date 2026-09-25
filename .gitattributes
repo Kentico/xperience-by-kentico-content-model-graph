@@ -1,9 +1,14 @@
-# Auto detect text files and perform LF normalization
+# Auto detect text files and normalize them to LF, in the repository and in the
+# working tree alike.
+#
+# eol=lf is deliberate and load bearing. .editorconfig sets end_of_line = lf for
+# C# and CI gates every build on `dotnet format --verify-no-changes`, so a CRLF
+# working tree fails the build. Without eol=lf that is exactly what a developer
+# with core.autocrlf=true gets the moment git touches a file - a checkout, a
+# branch switch, a stash pop - and the failure looks like thousands of unrelated
+# whitespace errors.
 
-# Windows developers can enable autocrlf to checkout in crlf and commit in lf
-# git config --global core.autocrlf true
-
-*                   text=auto
+*                   text=auto eol=lf
 
 *.cs                text diff=csharp
 *.cshtml            text diff=html
