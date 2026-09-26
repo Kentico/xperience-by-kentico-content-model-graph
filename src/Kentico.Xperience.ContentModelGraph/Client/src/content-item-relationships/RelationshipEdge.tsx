@@ -1,7 +1,6 @@
 import {
   BaseEdge,
   EdgeLabelRenderer,
-  getBezierPath,
   type Edge,
   type EdgeProps,
 } from "@xyflow/react";
@@ -11,8 +10,8 @@ import {
   EDGE_LABEL_VERTICAL_CHROME,
   estimateEdgeLabelSegment,
 } from "../shared/edgeLabel";
-import type { EdgeLabelSlot } from "../shared/edgeLabelStack";
-import { useEdgeLabelTransform } from "../shared/useEdgeLabelTransform";
+import type { EdgeLabelSlot, SelfLoopSlot } from "../shared/edgeLabelStack";
+import { useEdgeGeometry } from "../shared/useEdgeLabelTransform";
 
 // One reference drawn on an edge. An edge can carry several: a page that points at the same item from its
 // page template and from a widget produces two references between the same pair of nodes, and two edges
@@ -33,6 +32,9 @@ export interface RelationshipEdgeData extends Record<string, unknown> {
   // the two curves cross at their centres, so their chips are stacked there instead of drawn on top of one
   // another - see `edgeLabelStack.ts`. References in one direction are already merged into one edge.
   readonly labelSlot?: EdgeLabelSlot;
+  // Set only on an item referencing itself (an item selected in its own field), which is drawn as a loop
+  // around its node - see `edgeLabelStack.ts`.
+  readonly selfLoopSlot?: SelfLoopSlot;
 }
 
 export type RelationshipEdge = Edge<RelationshipEdgeData, "relationshipEdge">;
@@ -181,25 +183,22 @@ export const RelationshipEdgeComponent = ({
   style,
   data,
 }: EdgeProps<RelationshipEdge>) => {
-  const [edgePath, labelX, labelY] = getBezierPath({
+  const { path: edgePath, labelTransform: transform } = useEdgeGeometry({
+    source,
+    target,
     sourceX,
     sourceY,
     sourcePosition,
     targetX,
     targetY,
     targetPosition,
+    labelSlot: data?.labelSlot,
+    selfLoopSlot: data?.selfLoopSlot,
   });
 
   const entries = data?.entries ?? [];
   const { blocks, overflow } = relationshipEdgeLabelBlocks(entries);
   const title = relationshipEdgeLabelTooltip(entries);
-  const transform = useEdgeLabelTransform(
-    source,
-    target,
-    labelX,
-    labelY,
-    data?.labelSlot,
-  );
 
   return (
     <>

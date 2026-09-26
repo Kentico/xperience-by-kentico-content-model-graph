@@ -37,6 +37,7 @@ import {
 import {
   EDGE_LABEL_STACK_GAP,
   stackEdgeLabels,
+  stackSelfLoops,
 } from "../shared/edgeLabelStack";
 import {
   edgeKinds,
@@ -316,18 +317,23 @@ const ContentModelGraph = ({
     // Edges sharing a pair of nodes - two fields pointing the same way, or two
     // classes referencing each other - would draw their chips on top of one
     // another, so each such edge is told its place in a stack.
-    const labelSlots = stackEdgeLabels(
-      unslottedEdges.map((edge) => ({
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        height: estimateClassEdgeLabelSize(edge.data?.label).height,
-      })),
-    );
+    // A class referencing itself is drawn as a loop around its node instead,
+    // and several such loops on one node are nested with their chips stacked.
+    const stackInputs = unslottedEdges.map((edge) => ({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      height: estimateClassEdgeLabelSize(edge.data?.label).height,
+    }));
+    const labelSlots = stackEdgeLabels(stackInputs);
+    const selfLoopSlots = stackSelfLoops(stackInputs);
     const flowEdges = unslottedEdges.map((edge): ClassEdge => {
       const labelSlot = labelSlots.get(edge.id);
+      const selfLoopSlot = selfLoopSlots.get(edge.id);
 
-      return labelSlot ? { ...edge, data: { ...edge.data, labelSlot } } : edge;
+      return labelSlot || selfLoopSlot
+        ? { ...edge, data: { ...edge.data, labelSlot, selfLoopSlot } }
+        : edge;
     });
 
     // Absent on the unfiltered graph, which has no focal node - the three

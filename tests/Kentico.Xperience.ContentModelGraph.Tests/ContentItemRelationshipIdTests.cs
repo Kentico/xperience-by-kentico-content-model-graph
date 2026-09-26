@@ -167,6 +167,25 @@ public class ContentItemRelationshipIdTests
         });
     }
 
+    // An item selected in its own field is both an outgoing and an incoming reference of itself. The two carry
+    // one id, so the client - which keys edges by their endpoints and field - draws a single self-loop.
+    [Test]
+    public void ReferenceRelationships_ForAnItemReferencingItself_CarryOneIdInBothDirections()
+    {
+        var outgoing = new List<ContentItemRelationship>();
+        var incoming = new List<ContentItemRelationship>();
+        ContentItemRelationshipGraphBuilder.AddRelationships(
+            outgoing, Node(ARTICLE_ITEM_ID), ARTICLE_ITEM_ID, ARTICLE_ITEM_ID, referenceGroup, "outgoing", [Field(REFERENCE_FIELD)]);
+        ContentItemRelationshipGraphBuilder.AddRelationships(
+            incoming, Node(ARTICLE_ITEM_ID), ARTICLE_ITEM_ID, ARTICLE_ITEM_ID, referenceGroup, "incoming", [Field(REFERENCE_FIELD)]);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(outgoing.Single().Id, Is.EqualTo(incoming.Single().Id));
+            Assert.That(outgoing.Single().Id, Does.StartWith($"item:{ARTICLE_ITEM_ID}=>item:{ARTICLE_ITEM_ID}:"));
+        });
+    }
+
     // Two items selected in one field produce two edges out of one AddRelationships call chain - the case the
     // reference group alone could not tell apart.
     [Test]

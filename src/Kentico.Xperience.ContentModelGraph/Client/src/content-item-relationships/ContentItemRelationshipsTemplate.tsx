@@ -37,7 +37,7 @@ import {
   RelationshipEdgeComponent,
   type RelationshipEdge,
 } from "./RelationshipEdge";
-import { stackEdgeLabels } from "../shared/edgeLabelStack";
+import { stackEdgeLabels, stackSelfLoops } from "../shared/edgeLabelStack";
 import { nodeColor, type NodeKind } from "../content-model-graph/model";
 import {
   expandKey,
@@ -313,6 +313,11 @@ const layout = (
   };
 
   for (const edge of edges) {
+    // A node is never grouped by a loop back to itself: it names no neighbour to hang the node off.
+    if (edge.source === edge.target) {
+      continue;
+    }
+
     const field = edgeFields.get(edge.id) ?? edge.id;
 
     addAnchor(edge.source, {
@@ -641,20 +646,22 @@ const ContentItemRelationshipsGraph = ({
     // Merging leaves at most one edge per direction between a pair of nodes, but two items that reference
     // each other still get two edges whose curves cross at their centres, chips and all - so each of the
     // two is told its place in a stack there.
-    const labelSlots = stackEdgeLabels(
-      unslottedEdges.map((edge) => ({
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        height: estimateRelationshipEdgeLabelSize(edge.data?.entries ?? [])
-          .height,
-      })),
-    );
+    // An item selected in its own field is drawn as a loop around its node instead.
+    const stackInputs = unslottedEdges.map((edge) => ({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      height: estimateRelationshipEdgeLabelSize(edge.data?.entries ?? [])
+        .height,
+    }));
+    const labelSlots = stackEdgeLabels(stackInputs);
+    const selfLoopSlots = stackSelfLoops(stackInputs);
     const flowEdges = unslottedEdges.map((edge): RelationshipEdge => {
       const labelSlot = labelSlots.get(edge.id);
+      const selfLoopSlot = selfLoopSlots.get(edge.id);
 
-      return labelSlot && edge.data
-        ? { ...edge, data: { ...edge.data, labelSlot } }
+      return (labelSlot || selfLoopSlot) && edge.data
+        ? { ...edge, data: { ...edge.data, labelSlot, selfLoopSlot } }
         : edge;
     });
 

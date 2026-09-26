@@ -1,7 +1,6 @@
 import {
   BaseEdge,
   EdgeLabelRenderer,
-  getBezierPath,
   type Edge,
   type EdgeProps,
 } from "@xyflow/react";
@@ -11,8 +10,8 @@ import {
   EDGE_LABEL_VERTICAL_CHROME,
   estimateEdgeLabelSegment,
 } from "../shared/edgeLabel";
-import type { EdgeLabelSlot } from "../shared/edgeLabelStack";
-import { useEdgeLabelTransform } from "../shared/useEdgeLabelTransform";
+import type { EdgeLabelSlot, SelfLoopSlot } from "../shared/edgeLabelStack";
+import { useEdgeGeometry } from "../shared/useEdgeLabelTransform";
 
 export interface ClassEdgeData extends Record<string, unknown> {
   /**
@@ -28,6 +27,12 @@ export interface ClassEdgeData extends Record<string, unknown> {
    * top of each other, so they are stacked instead - see `edgeLabelStack.ts`.
    */
   readonly labelSlot?: EdgeLabelSlot;
+  /**
+   * Set only on an edge from a class to itself - a field that allows its own
+   * content type - which is drawn as a loop around the node, nested and
+   * stacked with any other self-loops of the same node.
+   */
+  readonly selfLoopSlot?: SelfLoopSlot;
 }
 
 export type ClassEdge = Edge<ClassEdgeData, "classEdge">;
@@ -76,23 +81,20 @@ export const ClassEdgeComponent = ({
   style,
   data,
 }: EdgeProps<ClassEdge>) => {
-  const [edgePath, labelX, labelY] = getBezierPath({
+  const { path: edgePath, labelTransform: transform } = useEdgeGeometry({
+    source,
+    target,
     sourceX,
     sourceY,
     sourcePosition,
     targetX,
     targetY,
     targetPosition,
+    labelSlot: data?.labelSlot,
+    selfLoopSlot: data?.selfLoopSlot,
   });
 
   const label = data?.label;
-  const transform = useEdgeLabelTransform(
-    source,
-    target,
-    labelX,
-    labelY,
-    data?.labelSlot,
-  );
 
   return (
     <>
