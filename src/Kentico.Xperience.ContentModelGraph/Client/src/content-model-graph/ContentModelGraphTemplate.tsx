@@ -35,6 +35,10 @@ import {
   type ClassEdge,
 } from "./ClassEdge";
 import {
+  EDGE_LABEL_STACK_GAP,
+  stackEdgeLabels,
+} from "../shared/edgeLabelStack";
+import {
   edgeKinds,
   edgeStyle,
   nodeColor,
@@ -147,15 +151,20 @@ const layout = (
   //
   // Two fields of one class pointing at the same class are two edges between
   // the same pair of nodes, and this is not a multigraph, so the second
-  // reservation would replace the first: the larger of the two is kept, which
-  // is the one that has to fit.
+  // reservation would replace the first. Their chips are stacked one above the
+  // other (see `edgeLabelStack.ts`), so the reservation grows to hold the
+  // whole stack: as wide as the widest chip and as tall as all of them.
   edges.forEach((edge) => {
     const { width, height } = estimateClassEdgeLabelSize(edge.data?.label);
     const reserved = graph.edge(edge.source, edge.target);
+    const reservedHeight = reserved?.height ?? 0;
 
     graph.setEdge(edge.source, edge.target, {
       width: Math.max(width, reserved?.width ?? 0),
-      height: Math.max(height, reserved?.height ?? 0),
+      height:
+        reservedHeight > 0 && height > 0
+          ? reservedHeight + EDGE_LABEL_STACK_GAP + height
+          : Math.max(height, reservedHeight),
       labelpos: "c",
     });
   });
@@ -270,7 +279,7 @@ const ContentModelGraph = ({
         .map((node) => node.id),
     );
 
-    const flowEdges: ClassEdge[] = data.edges
+    const unslottedEdges: ClassEdge[] = data.edges
       .filter(
         (edge) =>
           visibleEdgeKinds.includes(edge.kind) &&
@@ -303,6 +312,23 @@ const ContentModelGraph = ({
           markerEnd: { type: MarkerType.ArrowClosed, color: style?.color },
         };
       });
+
+    // Edges sharing a pair of nodes - two fields pointing the same way, or two
+    // classes referencing each other - would draw their chips on top of one
+    // another, so each such edge is told its place in a stack.
+    const labelSlots = stackEdgeLabels(
+      unslottedEdges.map((edge) => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        height: estimateClassEdgeLabelSize(edge.data?.label).height,
+      })),
+    );
+    const flowEdges = unslottedEdges.map((edge): ClassEdge => {
+      const labelSlot = labelSlots.get(edge.id);
+
+      return labelSlot ? { ...edge, data: { ...edge.data, labelSlot } } : edge;
+    });
 
     // Absent on the unfiltered graph, which has no focal node - the three
     // contextual pages are the only ones that filter to one node's

@@ -37,6 +37,7 @@ import {
   RelationshipEdgeComponent,
   type RelationshipEdge,
 } from "./RelationshipEdge";
+import { stackEdgeLabels } from "../shared/edgeLabelStack";
 import { nodeColor, type NodeKind } from "../content-model-graph/model";
 import {
   expandKey,
@@ -598,7 +599,7 @@ const ContentItemRelationshipsGraph = ({
   const { layoutedNodes, layoutedEdges } = useMemo(() => {
     const mergedEdges = mergeRelationshipEdgeRecords(visibleRecords);
 
-    const flowEdges: RelationshipEdge[] = mergedEdges.map((merged) => {
+    const unslottedEdges: RelationshipEdge[] = mergedEdges.map((merged) => {
       const { id, source, target, records } = merged;
       // An edge touching a deleted item is a broken reference, so it is muted and dashed. Merged records
       // share both endpoints, so they are broken or whole together - there is no mixed case to resolve.
@@ -635,6 +636,26 @@ const ContentItemRelationshipsGraph = ({
           color,
         },
       };
+    });
+
+    // Merging leaves at most one edge per direction between a pair of nodes, but two items that reference
+    // each other still get two edges whose curves cross at their centres, chips and all - so each of the
+    // two is told its place in a stack there.
+    const labelSlots = stackEdgeLabels(
+      unslottedEdges.map((edge) => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        height: estimateRelationshipEdgeLabelSize(edge.data?.entries ?? [])
+          .height,
+      })),
+    );
+    const flowEdges = unslottedEdges.map((edge): RelationshipEdge => {
+      const labelSlot = labelSlots.get(edge.id);
+
+      return labelSlot && edge.data
+        ? { ...edge, data: { ...edge.data, labelSlot } }
+        : edge;
     });
 
     const flowNodes: RelationshipNode[] = Array.from(visibleItems.entries())

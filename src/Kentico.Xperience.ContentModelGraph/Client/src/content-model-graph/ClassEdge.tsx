@@ -11,6 +11,8 @@ import {
   EDGE_LABEL_VERTICAL_CHROME,
   estimateEdgeLabelSegment,
 } from "../shared/edgeLabel";
+import type { EdgeLabelSlot } from "../shared/edgeLabelStack";
+import { useEdgeLabelTransform } from "../shared/useEdgeLabelTransform";
 
 export interface ClassEdgeData extends Record<string, unknown> {
   /**
@@ -20,6 +22,12 @@ export interface ClassEdgeData extends Record<string, unknown> {
    * relationship, so there is never more than one label to show.
    */
   readonly label?: string;
+  /**
+   * Set only when another labelled edge joins the same pair of nodes, in
+   * either direction: the chips of such a group would otherwise be drawn on
+   * top of each other, so they are stacked instead - see `edgeLabelStack.ts`.
+   */
+  readonly labelSlot?: EdgeLabelSlot;
 }
 
 export type ClassEdge = Edge<ClassEdgeData, "classEdge">;
@@ -56,6 +64,8 @@ export const estimateClassEdgeLabelSize = (label: string | undefined) => {
  */
 export const ClassEdgeComponent = ({
   id,
+  source,
+  target,
   sourceX,
   sourceY,
   sourcePosition,
@@ -76,6 +86,13 @@ export const ClassEdgeComponent = ({
   });
 
   const label = data?.label;
+  const transform = useEdgeLabelTransform(
+    source,
+    target,
+    labelX,
+    labelY,
+    data?.labelSlot,
+  );
 
   return (
     <>
@@ -85,7 +102,7 @@ export const ClassEdgeComponent = ({
           <div
             className="cmg-edge-label nodrag nopan"
             style={{
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+              transform,
             }}
             // A long field name wraps to two lines and is clamped after that,
             // so the full text has to stay reachable from somewhere.

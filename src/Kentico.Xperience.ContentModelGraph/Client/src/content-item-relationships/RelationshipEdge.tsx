@@ -11,6 +11,8 @@ import {
   EDGE_LABEL_VERTICAL_CHROME,
   estimateEdgeLabelSegment,
 } from "../shared/edgeLabel";
+import type { EdgeLabelSlot } from "../shared/edgeLabelStack";
+import { useEdgeLabelTransform } from "../shared/useEdgeLabelTransform";
 
 // One reference drawn on an edge. An edge can carry several: a page that points at the same item from its
 // page template and from a widget produces two references between the same pair of nodes, and two edges
@@ -27,6 +29,10 @@ export interface RelationshipEdgeLabelEntry {
 export interface RelationshipEdgeData extends Record<string, unknown> {
   readonly entries: readonly RelationshipEdgeLabelEntry[];
   readonly broken: boolean;
+  // Set only when the reverse reference joins the same pair of nodes (A references B and B references A):
+  // the two curves cross at their centres, so their chips are stacked there instead of drawn on top of one
+  // another - see `edgeLabelStack.ts`. References in one direction are already merged into one edge.
+  readonly labelSlot?: EdgeLabelSlot;
 }
 
 export type RelationshipEdge = Edge<RelationshipEdgeData, "relationshipEdge">;
@@ -163,6 +169,8 @@ export const estimateRelationshipEdgeLabelSize = (
 // from one another, which a single run of text cannot do.
 export const RelationshipEdgeComponent = ({
   id,
+  source,
+  target,
   sourceX,
   sourceY,
   sourcePosition,
@@ -185,6 +193,13 @@ export const RelationshipEdgeComponent = ({
   const entries = data?.entries ?? [];
   const { blocks, overflow } = relationshipEdgeLabelBlocks(entries);
   const title = relationshipEdgeLabelTooltip(entries);
+  const transform = useEdgeLabelTransform(
+    source,
+    target,
+    labelX,
+    labelY,
+    data?.labelSlot,
+  );
 
   return (
     <>
@@ -196,7 +211,7 @@ export const RelationshipEdgeComponent = ({
               data?.broken ? " cmg-relationships-edge-label--missing" : ""
             }`}
             style={{
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+              transform,
             }}
             title={title}
           >
