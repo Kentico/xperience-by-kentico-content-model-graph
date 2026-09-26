@@ -54,7 +54,7 @@ Watch and see how you can use this library to explore the entire data model of y
 
 | Xperience version | Library version    |
 | ----------------- | ------------------ |
-| >= 31.7.3         | 1.0.0-prerelease-1 |
+| >= 31.7.3         | 1.0.0              |
 
 - .NET 10.0 or newer
 - Xperience by Kentico 31.7.3 or newer
@@ -62,7 +62,7 @@ Watch and see how you can use this library to explore the entire data model of y
 ## Package Installation
 
 ```powershell
-dotnet add package Kentico.Xperience.ContentModelGraph --version 1.0.0-prerelease-1
+dotnet add package Kentico.Xperience.ContentModelGraph --version 1.0.0
 ```
 
 ## Quick Start
