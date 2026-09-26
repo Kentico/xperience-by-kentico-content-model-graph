@@ -37,7 +37,8 @@ import {
   RelationshipEdgeComponent,
   type RelationshipEdge,
 } from "./RelationshipEdge";
-import { stackEdgeLabels, stackSelfLoops } from "../shared/edgeLabelStack";
+import { stackSelfLoops } from "../shared/edgeLabelStack";
+import { assignEdgeLanes } from "../shared/edgeRoute";
 import { nodeColor, type NodeKind } from "../content-model-graph/model";
 import {
   expandKey,
@@ -644,24 +645,23 @@ const ContentItemRelationshipsGraph = ({
     });
 
     // Merging leaves at most one edge per direction between a pair of nodes, but two items that reference
-    // each other still get two edges whose curves cross at their centres, chips and all - so each of the
-    // two is told its place in a stack there.
+    // each other still get two edges, which both run between the two nodes' facing sides - so each of the
+    // two is given a lane of its own, bowed apart from the other, with its chip on it.
     // An item selected in its own field is drawn as a loop around its node instead.
-    const stackInputs = unslottedEdges.map((edge) => ({
+    const laneInputs = unslottedEdges.map((edge) => ({
       id: edge.id,
       source: edge.source,
       target: edge.target,
-      height: estimateRelationshipEdgeLabelSize(edge.data?.entries ?? [])
-        .height,
+      ...estimateRelationshipEdgeLabelSize(edge.data?.entries ?? []),
     }));
-    const labelSlots = stackEdgeLabels(stackInputs);
-    const selfLoopSlots = stackSelfLoops(stackInputs);
+    const lanes = assignEdgeLanes(laneInputs);
+    const selfLoopSlots = stackSelfLoops(laneInputs);
     const flowEdges = unslottedEdges.map((edge): RelationshipEdge => {
-      const labelSlot = labelSlots.get(edge.id);
+      const lane = lanes.get(edge.id);
       const selfLoopSlot = selfLoopSlots.get(edge.id);
 
-      return (labelSlot || selfLoopSlot) && edge.data
-        ? { ...edge, data: { ...edge.data, labelSlot, selfLoopSlot } }
+      return (lane || selfLoopSlot) && edge.data
+        ? { ...edge, data: { ...edge.data, lane, selfLoopSlot } }
         : edge;
     });
 

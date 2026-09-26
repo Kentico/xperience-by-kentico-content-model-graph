@@ -10,7 +10,8 @@ import {
   EDGE_LABEL_VERTICAL_CHROME,
   estimateEdgeLabelSegment,
 } from "../shared/edgeLabel";
-import type { EdgeLabelSlot, SelfLoopSlot } from "../shared/edgeLabelStack";
+import type { SelfLoopSlot } from "../shared/edgeLabelStack";
+import type { EdgeLane } from "../shared/edgeRoute";
 import { useEdgeGeometry } from "../shared/useEdgeLabelTransform";
 
 // One reference drawn on an edge. An edge can carry several: a page that points at the same item from its
@@ -29,9 +30,9 @@ export interface RelationshipEdgeData extends Record<string, unknown> {
   readonly entries: readonly RelationshipEdgeLabelEntry[];
   readonly broken: boolean;
   // Set only when the reverse reference joins the same pair of nodes (A references B and B references A):
-  // the two curves cross at their centres, so their chips are stacked there instead of drawn on top of one
-  // another - see `edgeLabelStack.ts`. References in one direction are already merged into one edge.
-  readonly labelSlot?: EdgeLabelSlot;
+  // both would run between the same two sides, so each is bowed into a lane of its own with its chip on it -
+  // see `edgeRoute.ts`. References in one direction are already merged into one edge.
+  readonly lane?: EdgeLane;
   // Set only on an item referencing itself (an item selected in its own field), which is drawn as a loop
   // around its node - see `edgeLabelStack.ts`.
   readonly selfLoopSlot?: SelfLoopSlot;
@@ -192,7 +193,7 @@ export const RelationshipEdgeComponent = ({
     targetX,
     targetY,
     targetPosition,
-    labelSlot: data?.labelSlot,
+    lane: data?.lane,
     selfLoopSlot: data?.selfLoopSlot,
   });
 

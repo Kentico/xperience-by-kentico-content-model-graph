@@ -6,13 +6,11 @@ import {
 } from "@xyflow/react";
 
 import {
-  edgeLabelStackAnchor,
-  edgeLabelTransform,
   selfLoopGeometry,
   type EdgeLabelNodeBox,
-  type EdgeLabelSlot,
   type SelfLoopSlot,
 } from "./edgeLabelStack";
+import { edgeLabelTransform, edgeRoute, type EdgeLane } from "./edgeRoute";
 
 const boxOf = (node: InternalNode | undefined): EdgeLabelNodeBox | undefined =>
   node?.measured.width !== undefined && node.measured.height !== undefined
@@ -24,30 +22,6 @@ const boxOf = (node: InternalNode | undefined): EdgeLabelNodeBox | undefined =>
       }
     : undefined;
 
-/**
- * The transform for an edge's label chip. An edge with no slot is alone between its pair of nodes and is
- * centred on its own curve (`labelX`, `labelY`); a slotted edge shares its pair with other labelled edges
- * and takes its place in a stack centred between the two nodes - see `edgeLabelStack.ts`.
- */
-export const useEdgeLabelTransform = (
-  source: string,
-  target: string,
-  labelX: number,
-  labelY: number,
-  slot: EdgeLabelSlot | undefined,
-) => {
-  const sourceNode = useInternalNode(source);
-  const targetNode = useInternalNode(target);
-
-  if (!slot) {
-    return edgeLabelTransform(labelX, labelY);
-  }
-
-  const anchor = edgeLabelStackAnchor(boxOf(sourceNode), boxOf(targetNode));
-
-  return edgeLabelTransform(anchor?.x ?? labelX, anchor?.y ?? labelY, slot);
-};
-
 export interface EdgeGeometryInput {
   readonly source: string;
   readonly target: string;
@@ -57,15 +31,15 @@ export interface EdgeGeometryInput {
   readonly targetX: number;
   readonly targetY: number;
   readonly targetPosition: Position;
-  readonly labelSlot?: EdgeLabelSlot;
+  readonly lane?: EdgeLane;
   readonly selfLoopSlot?: SelfLoopSlot;
 }
 
 /**
- * The path an edge is drawn along and the transform for its label chip. An edge between two nodes is a
- * bezier with its chip centred on it, or stacked with the chips of the other edges between the same pair;
- * an edge from a node to itself is a loop around the node with its chip on the loop - a bezier from a
- * node's source handle back to its own target handle would run straight across the node.
+ * The path an edge is drawn along and the transform for its label chip. An edge between two nodes runs
+ * between the sides of the two nodes that face each other, bowed into its own lane when it shares the pair
+ * with other edges - see `edgeRoute.ts`; an edge from a node to itself is a loop around the node with its
+ * chip on the loop - see `edgeLabelStack.ts`. Both read the nodes' live positions, so they follow a drag.
  */
 export const useEdgeGeometry = ({
   source,
@@ -76,39 +50,50 @@ export const useEdgeGeometry = ({
   targetX,
   targetY,
   targetPosition,
-  labelSlot,
+  lane,
   selfLoopSlot,
 }: EdgeGeometryInput) => {
-  const [bezierPath, labelX, labelY] = getBezierPath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
-  });
-  const labelTransform = useEdgeLabelTransform(
-    source,
-    target,
-    labelX,
-    labelY,
-    labelSlot,
-  );
-  const box = boxOf(useInternalNode(source));
+  const sourceBox = boxOf(useInternalNode(source));
+  const targetBox = boxOf(useInternalNode(target));
+  // The handles sit on the left and right of a node under `LR`, on its top and bottom under `TB`.
+  const horizontal =
+    sourcePosition === Position.Left || sourcePosition === Position.Right;
 
-  if (source !== target || !box) {
-    return { path: bezierPath, labelTransform };
+  if (!sourceBox || !targetBox) {
+    // Not measured yet: draw ReactFlow's own curve until the nodes are.
+    const [path, labelX, labelY] = getBezierPath({
+      sourceX,
+      sourceY,
+      sourcePosition,
+      targetX,
+      targetY,
+      targetPosition,
+    });
+
+    return { path, labelTransform: edgeLabelTransform(labelX, labelY) };
   }
 
-  return selfLoopGeometry({
-    box,
-    // The handles sit on the left and right of a node under `LR`, on its top and bottom under `TB`.
-    horizontal:
-      sourcePosition === Position.Left || sourcePosition === Position.Right,
+  if (source === target) {
+    return selfLoopGeometry({
+      box: sourceBox,
+      horizontal,
+      sourceX,
+      sourceY,
+      targetX,
+      targetY,
+      slot: selfLoopSlot,
+    });
+  }
+
+  return edgeRoute({
+    sourceBox,
+    targetBox,
+    horizontal,
     sourceX,
     sourceY,
     targetX,
     targetY,
-    slot: selfLoopSlot,
+    lane,
+    reversed: source > target,
   });
 };

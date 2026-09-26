@@ -10,7 +10,8 @@ import {
   EDGE_LABEL_VERTICAL_CHROME,
   estimateEdgeLabelSegment,
 } from "../shared/edgeLabel";
-import type { EdgeLabelSlot, SelfLoopSlot } from "../shared/edgeLabelStack";
+import type { SelfLoopSlot } from "../shared/edgeLabelStack";
+import type { EdgeLane } from "../shared/edgeRoute";
 import { useEdgeGeometry } from "../shared/useEdgeLabelTransform";
 
 export interface ClassEdgeData extends Record<string, unknown> {
@@ -22,11 +23,12 @@ export interface ClassEdgeData extends Record<string, unknown> {
    */
   readonly label?: string;
   /**
-   * Set only when another labelled edge joins the same pair of nodes, in
-   * either direction: the chips of such a group would otherwise be drawn on
-   * top of each other, so they are stacked instead - see `edgeLabelStack.ts`.
+   * Set only when another edge joins the same pair of nodes, in either
+   * direction: the edges of such a group would otherwise be drawn along one
+   * line, so each is bowed into a lane of its own with its chip on it - see
+   * `edgeRoute.ts`.
    */
-  readonly labelSlot?: EdgeLabelSlot;
+  readonly lane?: EdgeLane;
   /**
    * Set only on an edge from a class to itself - a field that allows its own
    * content type - which is drawn as a loop around the node, nested and
@@ -90,7 +92,7 @@ export const ClassEdgeComponent = ({
     targetX,
     targetY,
     targetPosition,
-    labelSlot: data?.labelSlot,
+    lane: data?.lane,
     selfLoopSlot: data?.selfLoopSlot,
   });
 

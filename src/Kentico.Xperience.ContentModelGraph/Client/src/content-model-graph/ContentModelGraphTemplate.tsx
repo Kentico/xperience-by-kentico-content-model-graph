@@ -34,11 +34,8 @@ import {
   estimateClassEdgeLabelSize,
   type ClassEdge,
 } from "./ClassEdge";
-import {
-  EDGE_LABEL_STACK_GAP,
-  stackEdgeLabels,
-  stackSelfLoops,
-} from "../shared/edgeLabelStack";
+import { stackSelfLoops } from "../shared/edgeLabelStack";
+import { assignEdgeLanes, EDGE_LANE_GAP } from "../shared/edgeRoute";
 import {
   edgeKinds,
   edgeStyle,
@@ -152,20 +149,30 @@ const layout = (
   //
   // Two fields of one class pointing at the same class are two edges between
   // the same pair of nodes, and this is not a multigraph, so the second
-  // reservation would replace the first. Their chips are stacked one above the
-  // other (see `edgeLabelStack.ts`), so the reservation grows to hold the
-  // whole stack: as wide as the widest chip and as tall as all of them.
+  // reservation would replace the first. Their curves are bowed into lanes
+  // side by side across the line between the two nodes (see `edgeRoute.ts`) -
+  // down the page under `LR`, across it under `TB` - so the reservation grows
+  // to hold every chip in that direction, and the largest in the other. The
+  // chips of several self-loops on one node are always stacked down the page.
+  const combine = (reserved: number, size: number) =>
+    reserved > 0 && size > 0
+      ? reserved + EDGE_LANE_GAP + size
+      : Math.max(reserved, size);
+
   edges.forEach((edge) => {
     const { width, height } = estimateClassEdgeLabelSize(edge.data?.label);
     const reserved = graph.edge(edge.source, edge.target);
+    const reservedWidth = reserved?.width ?? 0;
     const reservedHeight = reserved?.height ?? 0;
+    const stacksDown = direction === "LR" || edge.source === edge.target;
 
     graph.setEdge(edge.source, edge.target, {
-      width: Math.max(width, reserved?.width ?? 0),
-      height:
-        reservedHeight > 0 && height > 0
-          ? reservedHeight + EDGE_LABEL_STACK_GAP + height
-          : Math.max(height, reservedHeight),
+      width: stacksDown
+        ? Math.max(width, reservedWidth)
+        : combine(reservedWidth, width),
+      height: stacksDown
+        ? combine(reservedHeight, height)
+        : Math.max(height, reservedHeight),
       labelpos: "c",
     });
   });
@@ -315,24 +322,24 @@ const ContentModelGraph = ({
       });
 
     // Edges sharing a pair of nodes - two fields pointing the same way, or two
-    // classes referencing each other - would draw their chips on top of one
-    // another, so each such edge is told its place in a stack.
+    // classes referencing each other - would be drawn along one line, so each
+    // such edge is given a lane of its own.
     // A class referencing itself is drawn as a loop around its node instead,
     // and several such loops on one node are nested with their chips stacked.
-    const stackInputs = unslottedEdges.map((edge) => ({
+    const laneInputs = unslottedEdges.map((edge) => ({
       id: edge.id,
       source: edge.source,
       target: edge.target,
-      height: estimateClassEdgeLabelSize(edge.data?.label).height,
+      ...estimateClassEdgeLabelSize(edge.data?.label),
     }));
-    const labelSlots = stackEdgeLabels(stackInputs);
-    const selfLoopSlots = stackSelfLoops(stackInputs);
+    const lanes = assignEdgeLanes(laneInputs);
+    const selfLoopSlots = stackSelfLoops(laneInputs);
     const flowEdges = unslottedEdges.map((edge): ClassEdge => {
-      const labelSlot = labelSlots.get(edge.id);
+      const lane = lanes.get(edge.id);
       const selfLoopSlot = selfLoopSlots.get(edge.id);
 
-      return labelSlot || selfLoopSlot
-        ? { ...edge, data: { ...edge.data, labelSlot, selfLoopSlot } }
+      return lane || selfLoopSlot
+        ? { ...edge, data: { ...edge.data, lane, selfLoopSlot } }
         : edge;
     });
 
