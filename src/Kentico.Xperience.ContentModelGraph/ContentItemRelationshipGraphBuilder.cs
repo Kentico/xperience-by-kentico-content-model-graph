@@ -154,57 +154,87 @@ public sealed class ContentItemRelationshipGraphBuilder(
 
         ContentItemRelationshipItem MapItem(int relatedItemId) => MapContentItem(mapping, relatedItemId);
 
-        var outgoing = new List<ContentItemRelationship>();
-        foreach (var reference in outgoingReferences.Where(reference => items.ContainsKey(reference.ContentItemReferenceTargetItemID)))
+        // Content type fields keyed by field GUID, per content type, built on first use. A reference row's
+        // group GUID is the field GUID when a content type field produced the row.
+        var fieldSourcesByType = new Dictionary<int, IReadOnlyDictionary<Guid, RelationshipFieldSource>>();
+        IReadOnlyDictionary<Guid, RelationshipFieldSource> FieldSourcesOf(ContentItemInfo item)
         {
-            var fields = MatchFields(
-                rootItem,
-                reference.ContentItemReferenceTargetItemID,
-                items,
-                webPagesByContentItem,
-                fieldsByType,
-                fieldValues,
-                rootCommonData?.ContentItemCommonDataVisualBuilderWidgets,
-                rootCommonData?.ContentItemCommonDataVisualBuilderTemplateConfiguration);
-            AddRelationships(
-                outgoing,
-                MapItem(reference.ContentItemReferenceTargetItemID),
-                itemId,
-                reference.ContentItemReferenceTargetItemID,
-                reference.ContentItemReferenceGroupGUID,
-                "outgoing",
-                fields);
+            if (!fieldSourcesByType.TryGetValue(item.ContentItemContentTypeID, out var sources))
+            {
+                sources = contentTypes.TryGetValue(item.ContentItemContentTypeID, out var contentType)
+                    ? GetFieldSourcesByGuid(contentType.ClassName)
+                    : [];
+                fieldSourcesByType[item.ContentItemContentTypeID] = sources;
+            }
+
+            return sources;
+        }
+
+        // Each builder configuration is parsed once, not once per reference row.
+        var builderReferences = new Dictionary<int, PageBuilderReferences>();
+        PageBuilderReferences BuilderReferencesOf(ContentItemCommonDataInfo? commonData)
+        {
+            if (commonData is null)
+            {
+                return emptyPageBuilderReferences;
+            }
+
+            if (!builderReferences.TryGetValue(commonData.ContentItemCommonDataID, out var references))
+            {
+                references = WidgetReferenceReader.ReadPageBuilderReferences(
+                    commonData.ContentItemCommonDataVisualBuilderWidgets,
+                    commonData.ContentItemCommonDataVisualBuilderTemplateConfiguration);
+                builderReferences[commonData.ContentItemCommonDataID] = references;
+            }
+
+            return references;
+        }
+
+        var outgoing = new List<ContentItemRelationship>();
+        var rootBuilderReferences = BuilderReferencesOf(rootCommonData);
+        foreach (var target in outgoingReferences
+            .Where(reference => items.ContainsKey(reference.ContentItemReferenceTargetItemID))
+            .GroupBy(reference => reference.ContentItemReferenceTargetItemID))
+        {
+            var sources = ResolveReferenceSources(
+                target.Select(reference => reference.ContentItemReferenceGroupGUID),
+                FieldSourcesOf(rootItem),
+                IndexFieldIdentifiers([rootBuilderReferences]),
+                () => MatchFields(rootItem, target.Key, items, webPagesByContentItem, fieldsByType, fieldValues, rootBuilderReferences));
+            var targetItem = MapItem(target.Key);
+            foreach (var source in sources)
+            {
+                AddRelationships(outgoing, targetItem, itemId, target.Key, source.ReferenceGroup, "outgoing", source.Sources);
+            }
         }
         outgoing.AddRange(await GetTaxonomyRelationships(rootItem, fieldsByType, fieldValues, language.Selected.Name, applications));
         outgoing.AddRange(await GetFormRelationships(rootCommonData, applications));
 
         var incoming = new List<ContentItemRelationship>();
-        foreach (var reference in selectedIncomingReferences)
+        foreach (var source in selectedIncomingReferences
+            .GroupBy(reference => incomingCommonData[reference.ContentItemReferenceSourceCommonDataID].ContentItemCommonDataContentItemID))
         {
-            var sourceCommonData = incomingCommonData[reference.ContentItemReferenceSourceCommonDataID];
-            int sourceItemId = sourceCommonData.ContentItemCommonDataContentItemID;
-            if (!items.TryGetValue(sourceItemId, out var sourceItem))
+            if (!items.TryGetValue(source.Key, out var sourceItem))
             {
                 continue;
             }
 
-            var fields = MatchFields(
-                sourceItem,
-                itemId,
-                items,
-                webPagesByContentItem,
-                fieldsByType,
-                fieldValues,
-                sourceCommonData.ContentItemCommonDataVisualBuilderWidgets,
-                sourceCommonData.ContentItemCommonDataVisualBuilderTemplateConfiguration);
-            AddRelationships(
-                incoming,
-                MapItem(sourceItemId),
-                sourceItemId,
-                itemId,
-                reference.ContentItemReferenceGroupGUID,
-                "incoming",
-                fields);
+            // Each row of one source item was picked from its best language variant on its own, so the rows can
+            // come from different variants; every variant they came from is searched for their group GUIDs.
+            var sourceBuilderReferences = source
+                .Select(reference => BuilderReferencesOf(incomingCommonData[reference.ContentItemReferenceSourceCommonDataID]))
+                .Distinct()
+                .ToArray();
+            var sources = ResolveReferenceSources(
+                source.Select(reference => reference.ContentItemReferenceGroupGUID),
+                FieldSourcesOf(sourceItem),
+                IndexFieldIdentifiers(sourceBuilderReferences),
+                () => MatchFields(sourceItem, itemId, items, webPagesByContentItem, fieldsByType, fieldValues, sourceBuilderReferences[0]));
+            var sourceNode = MapItem(source.Key);
+            foreach (var resolved in sources)
+            {
+                AddRelationships(incoming, sourceNode, source.Key, itemId, resolved.ReferenceGroup, "incoming", resolved.Sources);
+            }
         }
 
         return new ContentItemRelationshipGraph
@@ -717,6 +747,141 @@ public sealed class ContentItemRelationshipGraphBuilder(
         return values;
     }
 
+    private static readonly PageBuilderReferences emptyPageBuilderReferences = new([], [], []);
+
+    /// <summary>
+    /// The content type's fields keyed by field GUID, which is the <c>ContentItemReferenceGroupGUID</c> of every
+    /// reference row a content type field produces. Every field is included, not only the relationship ones: a
+    /// rich text field produces reference rows for the pages it links to. The form is the one Xperience itself
+    /// resolves a group GUID against (see its content usage listing): the content type merged with the reusable
+    /// field schemas it uses, read from the shared form cache.
+    /// </summary>
+    private static Dictionary<Guid, RelationshipFieldSource> GetFieldSourcesByGuid(string className)
+    {
+        var sources = new Dictionary<Guid, RelationshipFieldSource>();
+        if (string.IsNullOrEmpty(className))
+        {
+            return sources;
+        }
+
+        var form = FormHelper.GetFormInfo(ReusableFieldSchemaUtils.GetPrefixedContentTypeName(className), clone: false);
+        foreach (var field in form?.GetFields(visible: true, invisible: true) ?? [])
+        {
+            if (field.Guid != Guid.Empty)
+            {
+                sources.TryAdd(field.Guid, CreateFieldSource(field));
+            }
+        }
+
+        return sources;
+    }
+
+    private static RelationshipFieldSource CreateFieldSource(FormFieldInfo field) =>
+        new(field.GetDisplayName(null) ?? field.Name, field.Name);
+
+    /// <summary>
+    /// The builder <c>fieldIdentifiers</c> of one item keyed by reference group GUID. An item's rows can come from
+    /// more than one language variant, so several configurations can be indexed together; the first one to name
+    /// a GUID wins.
+    /// </summary>
+    internal static Dictionary<Guid, PageBuilderFieldIdentifier> IndexFieldIdentifiers(IEnumerable<PageBuilderReferences> references)
+    {
+        var index = new Dictionary<Guid, PageBuilderFieldIdentifier>();
+        foreach (var fieldIdentifier in references.SelectMany(reference => reference.FieldIdentifiers))
+        {
+            index.TryAdd(fieldIdentifier.ReferenceGroup, fieldIdentifier);
+        }
+
+        return index;
+    }
+
+    /// <summary>
+    /// Labels the reference rows between one referencing item and one referenced item. Each row's
+    /// <c>ContentItemReferenceGroupGUID</c> says which field or builder property produced it, so a row is placed
+    /// by its group, not by searching field values for the target:
+    /// <list type="number">
+    /// <item>a content type field (reusable field schema fields included) whose GUID is the group,</item>
+    /// <item>a widget variant, section or page template property whose <c>fieldIdentifiers</c> entry is the group,</item>
+    /// <item>otherwise the fields and builder properties whose value holds the target, which covers builder
+    /// configuration saved before <c>fieldIdentifiers</c> existed.</item>
+    /// </list>
+    /// </summary>
+    /// <remarks>
+    /// Rows placed on builder properties are merged by property code name, so the same property on several
+    /// personalization variants - each variant has its own group GUID - stays one edge; that edge carries the
+    /// lowest of the merged group GUIDs, so its identifier does not depend on row order.
+    /// <para>
+    /// The value search runs only when a row cannot be placed by its group, and it cannot hand out a field or
+    /// property another row of the pair was already placed on. Its matches are given to one unplaced row, the one
+    /// with the lowest group GUID: which unplaced row belongs to which match is not knowable, and giving every
+    /// match to every row is what drew rows × fields edges, most of them mislabelled.
+    /// </para>
+    /// </remarks>
+    /// <param name="referenceGroups">The group GUIDs of the reference rows between the two items.</param>
+    /// <param name="contentTypeFields">The referencing item's content type fields, keyed by field GUID.</param>
+    /// <param name="builderFields">The referencing item's builder <c>fieldIdentifiers</c>, keyed by GUID.</param>
+    /// <param name="matchByValue">The value search, called only when a row cannot be placed by its group.</param>
+    internal static IReadOnlyList<ResolvedReferenceSource> ResolveReferenceSources(
+        IEnumerable<Guid> referenceGroups,
+        IReadOnlyDictionary<Guid, RelationshipFieldSource> contentTypeFields,
+        IReadOnlyDictionary<Guid, PageBuilderFieldIdentifier> builderFields,
+        Func<IReadOnlyList<RelationshipFieldSource>> matchByValue)
+    {
+        Guid[] groups = [.. referenceGroups.Distinct().OrderBy(group => group.ToString("D"), StringComparer.Ordinal)];
+        var resolved = new List<ResolvedReferenceSource>();
+        var builderRows = new List<(Guid Group, PageBuilderFieldIdentifier Location)>();
+        var unplaced = new List<Guid>();
+
+        foreach (var group in groups)
+        {
+            if (contentTypeFields.TryGetValue(group, out var field))
+            {
+                resolved.Add(new ResolvedReferenceSource(group, [field]));
+            }
+            else if (builderFields.TryGetValue(group, out var location))
+            {
+                builderRows.Add((group, location));
+            }
+            else
+            {
+                unplaced.Add(group);
+            }
+        }
+
+        foreach (var property in builderRows.GroupBy(
+            row => PageBuilderCodeName(row.Location.Path, row.Location.PropertyName),
+            StringComparer.Ordinal))
+        {
+            resolved.Add(new ResolvedReferenceSource(
+                property.First().Group,
+                [.. CreatePageBuilderFieldSources(property.Select(row => (row.Location.Path, row.Location.PropertyName)))]));
+        }
+
+        if (unplaced.Count == 0)
+        {
+            return resolved;
+        }
+
+        var placed = resolved
+            .SelectMany(row => row.Sources)
+            .Select(source => source.CodeName)
+            .ToHashSet(StringComparer.Ordinal);
+        RelationshipFieldSource[] matches = [.. matchByValue().Where(source => !placed.Contains(source.CodeName))];
+        if (matches.Length > 0)
+        {
+            resolved.Add(new ResolvedReferenceSource(unplaced[0], matches));
+            return resolved;
+        }
+
+        resolved.AddRange(unplaced.Select(group => new ResolvedReferenceSource(group, [])));
+        return resolved;
+    }
+
+    /// <summary>
+    /// The value search: the fields and builder properties of the referencing item whose value holds the target.
+    /// Only the fallback of <see cref="ResolveReferenceSources" /> - a value says nothing about which reference
+    /// row it produced.
+    /// </summary>
     private static IReadOnlyList<RelationshipFieldSource> MatchFields(
         ContentItemInfo sourceItem,
         int targetItemId,
@@ -724,8 +889,7 @@ public sealed class ContentItemRelationshipGraphBuilder(
         IReadOnlyDictionary<int, WebPageItemInfo> webPages,
         IReadOnlyDictionary<int, FormFieldInfo[]> fieldsByType,
         IReadOnlyDictionary<int, IReadOnlyDictionary<string, string?>> fieldValues,
-        string? widgetsJson,
-        string? templateConfigurationJson)
+        PageBuilderReferences pageBuilderReferences)
     {
         if (!items.TryGetValue(targetItemId, out var targetItem))
         {
@@ -741,10 +905,9 @@ public sealed class ContentItemRelationshipGraphBuilder(
             sources.AddRange(fields
                 .Where(field => values.TryGetValue(field.Name, out string? value)
                     && RelationshipFieldMatcher.MatchesTarget(value, field.DataType, targetItem.ContentItemGUID, pageGuid))
-                .Select(field => new RelationshipFieldSource(field.GetDisplayName(null) ?? field.Name, field.Name)));
+                .Select(CreateFieldSource));
         }
 
-        var pageBuilderReferences = WidgetReferenceReader.ReadPageBuilderReferences(widgetsJson, templateConfigurationJson);
         sources.AddRange(CreatePageBuilderFieldSources(pageBuilderReferences.ContentReferences
             .Where(reference => reference.Identifier == targetItem.ContentItemGUID || reference.Identifier == pageGuid)
             .Select(reference => (reference.Path, reference.PropertyName))));
@@ -1541,6 +1704,10 @@ public sealed class ContentItemRelationshipGraphBuilder(
     /// that come from a content type field, which have no path beyond the field itself.
     /// </param>
     internal sealed record RelationshipFieldSource(string Label, string CodeName, string? Path = null);
+
+    /// <param name="ReferenceGroup">The reference group GUID that goes into the edge identifier.</param>
+    /// <param name="Sources">The fields the row was placed in, one edge each; empty for one unlabelled edge.</param>
+    internal sealed record ResolvedReferenceSource(Guid ReferenceGroup, IReadOnlyList<RelationshipFieldSource> Sources);
 
     /// <summary>
     /// One end of a <see cref="ContentItemRelationship.Id" />: a kind, and the identifier that is stable for

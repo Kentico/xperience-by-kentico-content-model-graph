@@ -53,7 +53,7 @@ The page draws the current item, the items that reference it, and the items it r
 Relationships are read from:
 
 - Content item reference fields on each item's latest version. When multiple language variants contain the same incoming reference, the current language is preferred.
-- Page Builder configuration - widget, section, and page template properties - including personalization variants, which are otherwise invisible until that variant is selected in the builder. Edge labels name the source kind (`Widget:`, `Section:`, `Template:`) and the variant; the label tooltip shows the full Page Builder path.
+- Page Builder configuration - widget, section, and page template properties - including personalization variants, which are otherwise invisible until that variant is selected in the builder. Edge labels name the source kind (`Widget:`, `Section:`, `Template:`) and the variant; the label tooltip shows the full Page Builder path. Each reference is placed by the field or builder property Xperience recorded it for, so references from values the graph cannot parse - rich text links, or custom components with their own reference extractor - are labelled too. Email Builder configuration is read the same way.
 - Taxonomy fields. Selected tags are drawn as terminal nodes that link to the tag in the administration.
 - Forms embedded by the Form Widget. Forms are drawn as terminal nodes that link to the form.
 

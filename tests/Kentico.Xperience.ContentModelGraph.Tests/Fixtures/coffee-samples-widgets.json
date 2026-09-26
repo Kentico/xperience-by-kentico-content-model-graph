@@ -1,0 +1,345 @@
+{
+  "editableAreas": [
+    {
+      "identifier": "top",
+      "sections": [
+        {
+          "identifier": "9b99f36a-f522-44d4-bfb9-fc075f1a3bc1",
+          "type": "DancingGoat.SingleColumnSection",
+          "properties": {
+            "theme": "section-white"
+          },
+          "zones": [
+            {
+              "identifier": "fa8a8e06-42a6-43c9-960f-cfee9949025b",
+              "widgets": [
+                {
+                  "identifier": "63718636-7deb-4b9a-91c2-9f5f39c8f0fd",
+                  "type": "DancingGoat.LandingPage.HeroImage",
+                  "conditionType": "DancingGoat.Personalization.IsInContactGroup",
+                  "variants": [
+                    {
+                      "identifier": "49c53b7f-f9aa-43b5-b622-7e6672842693",
+                      "properties": {
+                        "image": [
+                          {
+                            "identifier": "8a528627-fc98-46a4-9b2f-c56b270e86c5"
+                          }
+                        ],
+                        "text": "Sign up for our weekly coffee samples from your local café!",
+                        "buttonText": "TASTE THE COFFEE",
+                        "buttonTarget": "#bottom-area",
+                        "theme": "light"
+                      },
+                      "fieldIdentifiers": {
+                        "image": "b27ccf6b-cd44-45cb-b087-5021dca20a55",
+                        "text": "8e1f70c8-f291-4d6f-83ad-600b117f3510",
+                        "buttonText": "7b266575-004b-4cca-919e-f29745290e59",
+                        "buttonTarget": "b65fe466-3aa0-4d29-8fb6-44fc30145071",
+                        "theme": "846f0e2f-4f0a-4e5f-879b-458aad5d92d3"
+                      }
+                    },
+                    {
+                      "identifier": "3cfad4b2-7df8-4460-a37a-e829b7138489",
+                      "name": "Sample Requests",
+                      "properties": {
+                        "image": [
+                          {
+                            "identifier": "abc5b875-2f70-4aac-80a8-f8033867b0c5"
+                          }
+                        ],
+                        "text": "Try some more free samples",
+                        "buttonText": "TASTE THE COFFEE",
+                        "buttonTarget": "#bottom-area",
+                        "theme": "light"
+                      },
+                      "conditionTypeParameters": {
+                        "selectedContactGroups": [
+                          {
+                            "objectGuid": null,
+                            "objectCodeName": "SampleRequestCustomer"
+                          }
+                        ],
+                        "variantName": null
+                      },
+                      "fieldIdentifiers": {
+                        "image": "8eab4cbc-e7b7-4859-9809-da9e3ec0eddf",
+                        "text": "fb453c4f-ad2f-4a87-95b1-b6b6b769dddc",
+                        "buttonText": "a1d79a3f-44fb-4491-88e4-373c5c9fecd7",
+                        "buttonTarget": "60093798-b7da-4229-bef3-3dd135d6c78d",
+                        "theme": "6a83cd79-b7ce-46b0-9926-001887dfa652"
+                      }
+                    },
+                    {
+                      "identifier": "cf94315c-604e-4c1f-911b-886babde8e53",
+                      "name": "Coffee sale",
+                      "properties": {
+                        "image": [
+                          {
+                            "identifier": "b8117d96-dfb3-474d-ad27-c3b0d3bd26db"
+                          }
+                        ],
+                        "text": "We have coffee on sale",
+                        "buttonText": "TASTE THE COFFEE",
+                        "buttonTarget": "#bottom-area",
+                        "theme": "light"
+                      },
+                      "conditionTypeParameters": {
+                        "selectedContactGroups": [
+                          {
+                            "objectGuid": null,
+                            "objectCodeName": "CoffeeBuyer"
+                          },
+                          {
+                            "objectGuid": null,
+                            "objectCodeName": "SampleRequestCustomer"
+                          }
+                        ],
+                        "variantName": null
+                      },
+                      "fieldIdentifiers": {
+                        "image": "8929ef50-a593-4bc0-8f2c-104ac9961691",
+                        "text": "e286df89-4907-4925-858e-85d7175943dd",
+                        "buttonText": "c1d78b4c-af7e-4865-b8c1-094a23e5a154",
+                        "buttonTarget": "604781ff-18f9-496f-8eec-0ee77f956d2d",
+                        "theme": "4243f332-25f5-4807-8e08-b50fa5b35929"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "fieldIdentifiers": {
+            "theme": "c269123d-c8f7-4297-82a5-25c60fb72d52"
+          }
+        },
+        {
+          "identifier": "634d5855-c855-4da7-9558-26619af1b3ab",
+          "type": "DancingGoat.SingleColumnSection",
+          "properties": {
+            "theme": "section-white"
+          },
+          "zones": [
+            {
+              "identifier": "d0b651d8-483e-40ba-b11c-f1c5747653dc",
+              "widgets": [
+                {
+                  "identifier": "ab7cdde4-7ce4-4e8c-89f3-d92ef08cac68",
+                  "type": "Kentico.Widget.RichText",
+                  "variants": [
+                    {
+                      "identifier": "3f67f5fb-bbd0-40d5-868e-83de0acb66b0",
+                      "properties": {
+                        "content": "<h2>Our previous batches</h2>"
+                      },
+                      "fieldIdentifiers": {
+                        "content": "4f5aed1c-e34e-4f77-ba5b-6004d49db07a"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "identifier": "b1e942d9-5c3b-4aba-9b1c-db95b67db84d",
+                  "type": "DancingGoat.LandingPage.ProductCardWidget",
+                  "variants": [
+                    {
+                      "identifier": "47712e5a-3a8a-4ef3-a7fc-b749e22ccae3",
+                      "properties": {
+                        "selectedProducts": [
+                          {
+                            "identifier": "cd3098ae-f4d3-409a-887a-3e4c6e0c856e"
+                          },
+                          {
+                            "identifier": "a9689fb8-e06f-4363-9aa1-b5c1b427a0ee"
+                          },
+                          {
+                            "identifier": "38d6115a-a102-4b4c-8f07-cf21ad100a57"
+                          }
+                        ]
+                      },
+                      "fieldIdentifiers": {
+                        "selectedProducts": "2fe94e9c-68b0-4202-b18f-49dc7c4d6810"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "fieldIdentifiers": {
+            "theme": "eab4eca5-337d-4342-97ec-c91e0c0566af"
+          }
+        },
+        {
+          "identifier": "9d41273b-5087-4b8f-a631-566d9bb37f83",
+          "type": "DancingGoat.SingleColumnSection",
+          "properties": {
+            "theme": null
+          },
+          "zones": [
+            {
+              "identifier": "00f38749-3248-4925-bbf9-235cdf2f13de",
+              "widgets": [
+                {
+                  "identifier": "ad4afc05-a0ea-4aa0-b23a-5987ef5b2e59",
+                  "type": "DancingGoat.LandingPage.TestimonialWidget",
+                  "variants": [
+                    {
+                      "identifier": "5b7917f8-60ae-4acc-90b4-cade95169ce1",
+                      "properties": {
+                        "quotationText": "Drinking Dancing Goat’s coffee samples has become a highlight of my week. Keep them coming please!",
+                        "authorText": "Stacey McKenzie, coffee lover",
+                        "colorCssClass": "second-color"
+                      },
+                      "fieldIdentifiers": {
+                        "quotationText": "46c8b475-48d6-4f65-bd38-fa147f6e51b9",
+                        "authorText": "00c0ae93-21c9-4bd2-bffe-f8721e71d53e",
+                        "colorCssClass": "379966b6-1cd6-43c3-971e-a99c43af1cd8"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "fieldIdentifiers": {
+            "theme": "df46474b-9762-4a06-990a-a77242afbc0c"
+          }
+        }
+      ]
+    },
+    {
+      "identifier": "bottom",
+      "sections": [
+        {
+          "identifier": "e37318cf-163d-4305-a2c9-f2a08826fa00",
+          "type": "DancingGoat.SingleColumnSection",
+          "properties": {
+            "theme": null
+          },
+          "zones": [
+            {
+              "identifier": "e7d4c575-d547-4390-8a07-0c1e90655592",
+              "widgets": [
+                {
+                  "identifier": "7280acd4-c66f-4609-879e-e0e5bbcb76c1",
+                  "type": "Kentico.Widget.RichText",
+                  "variants": [
+                    {
+                      "identifier": "2e500b94-5fea-46fe-8bdd-eb020d7d5f3d",
+                      "properties": {
+                        "content": "<h2>Love great coffee? So do we.</h2>"
+                      },
+                      "fieldIdentifiers": {
+                        "content": "8b675bdd-ff3e-4fcb-af82-5abdc0641bab"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "identifier": "3bf70380-10f0-4422-9472-8f2627e5432e",
+                  "type": "Kentico.Widget.RichText",
+                  "variants": [
+                    {
+                      "identifier": "a61c8a12-fa74-4122-8247-c42f69d71ee1",
+                      "properties": {
+                        "content": "<p>Read some of <a href=\"~/articles\" target=\"_blank\" data-channel-guid=\"55e3ae4b-3843-46b8-95d5-79611c371d6f\" rel=\"noopener noreferrer\">our articles</a>.</p>"
+                      },
+                      "fieldIdentifiers": {
+                        "content": "d06a3e43-5309-40cb-b51b-2ad14bd515de"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "identifier": "327f9020-b01b-4462-b174-55f2abb316be",
+                  "type": "Kentico.Widget.RichText",
+                  "variants": [
+                    {
+                      "identifier": "5ab527bf-cbb0-4099-b4d8-0eeb897d1227",
+                      "properties": {
+                        "content": "<p>Check out <a href=\"~/store/grinders\" target=\"_blank\" data-channel-guid=\"55e3ae4b-3843-46b8-95d5-79611c371d6f\" rel=\"noopener noreferrer\">our latest grinders</a>.</p>"
+                      },
+                      "fieldIdentifiers": {
+                        "content": "aba0ede5-9907-4528-83f5-c1a51eea9367"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "fieldIdentifiers": {
+            "theme": "b112b777-e0e4-4480-919f-ee8caa5fe365"
+          }
+        },
+        {
+          "identifier": "3289e5f9-2314-426c-b421-2a1deb563124",
+          "type": "DancingGoat.TwoColumnSection",
+          "properties": {
+            "theme": null
+          },
+          "zones": [
+            {
+              "identifier": "756dc3b5-de97-4ddd-a3e8-f5df1256bf3d",
+              "widgets": [
+                {
+                  "identifier": "2a96a1ac-93bd-406e-9440-a31f73377192",
+                  "type": "Kentico.FormWidget",
+                  "variants": [
+                    {
+                      "identifier": "bff0d65d-9c9e-4486-991e-1e1906b7332e",
+                      "properties": {
+                        "selectedForm": [
+                          {
+                            "objectGuid": null,
+                            "objectCodeName": "DancingGoatCoffeeSampleList"
+                          }
+                        ],
+                        "afterSubmitMode": "message",
+                        "afterSubmitDisplayText": "Thank you!",
+                        "afterSubmitRedirectToUrl": null,
+                        "afterSubmitRedirectToWebPage": []
+                      },
+                      "fieldIdentifiers": {
+                        "selectedForm": "73dab25f-6c9f-4f97-94fb-9ca24c3e8dbf",
+                        "afterSubmitMode": "76c50461-4038-4274-92f0-406902052fcc",
+                        "afterSubmitDisplayText": "ef8a196c-c296-46e0-aed3-65018183f234",
+                        "afterSubmitRedirectToUrl": "7cd3a2a8-bb95-4873-a411-66a8ead4f937",
+                        "afterSubmitRedirectToWebPage": "01ffc0a6-9f5f-4462-9eaf-d8049616aa05"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "identifier": "61140148-13e5-43cb-abae-6cc0ae2555a9",
+              "widgets": [
+                {
+                  "identifier": "7e38a6e6-c1c3-472d-bb9b-032a5fa66ab9",
+                  "type": "Kentico.Widget.RichText",
+                  "variants": [
+                    {
+                      "identifier": "b229b3d6-8755-4567-85e5-540e8baf21b6",
+                      "properties": {
+                        "content": "<h3>Join our list now and get weekly samples from your local cafe in our network.</h3><p>Sign up to get a coupon you can redeem at your nearest Dancing Goat cafe for a coffee sample. Different coffee sample will be waiting for you every week. We'll also make sure you don't miss out on news introducing the new coffees that we add to our store regularly.</p><p>New to coffee? Read <a href=\"~/articles/coffee-beverages-explained\" target=\"_blank\" data-channel-guid=\"55e3ae4b-3843-46b8-95d5-79611c371d6f\" rel=\"noopener noreferrer\">Coffee Beverages Explained</a>.</p>"
+                      },
+                      "fieldIdentifiers": {
+                        "content": "4b1da05e-2a56-4870-9620-99579fe7b4c6"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "fieldIdentifiers": {
+            "theme": "6be24b5b-dd4f-40c5-a2e4-f09585252eb4"
+          }
+        }
+      ]
+    }
+  ]
+}

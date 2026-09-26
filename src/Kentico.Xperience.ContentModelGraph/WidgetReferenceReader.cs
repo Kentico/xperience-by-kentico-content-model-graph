@@ -14,6 +14,12 @@ internal static class WidgetReferenceReader
     //   - widget properties, per personalization variant (editableAreas -> sections -> zones -> widgets -> variants),
     //   - section properties, which sit on the section itself alongside its zones,
     //   - page template properties, stored in a separate, flat configuration column.
+    //
+    // Each of the three also carries a "fieldIdentifiers" object mapping every property name to a GUID. That
+    // GUID is the ContentItemReferenceGroupGUID Xperience writes on the reference rows the property produces,
+    // so it is collected too: it places a reference row on its exact widget variant, section or template
+    // property without parsing the value. Email Builder configuration has the same shape and is stored in the
+    // same common data columns, so emails go through this reader unchanged.
     internal static PageBuilderReferences ReadPageBuilderReferences(string? widgetsJson, string? templateConfigurationJson)
     {
         var collector = new ReferenceCollector();
@@ -170,6 +176,8 @@ internal static class WidgetReferenceReader
     /// </summary>
     private static void CollectPropertyReferences(JsonElement owner, PageBuilderReferencePath path, ReferenceCollector collector)
     {
+        CollectFieldIdentifiers(owner, path, collector);
+
         if (!TryGetPropertyIgnoreCase(owner, "Properties", out var properties) || properties.ValueKind != JsonValueKind.Object)
         {
             return;
@@ -185,6 +193,29 @@ internal static class WidgetReferenceReader
             foreach (string codeName in ExtractWidgetPropertyObjectCodeNames(property.Value).Distinct(StringComparer.OrdinalIgnoreCase))
             {
                 collector.Add(new WidgetObjectReference(path, property.Name, codeName));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Reads the <c>fieldIdentifiers</c> object of a widget variant, a section or a page template. It maps each
+    /// property name to the reference group GUID of the reference rows that property produces. Configuration
+    /// saved before the object existed has none, and an entry that is not a GUID is skipped.
+    /// </summary>
+    private static void CollectFieldIdentifiers(JsonElement owner, PageBuilderReferencePath path, ReferenceCollector collector)
+    {
+        if (!TryGetPropertyIgnoreCase(owner, "FieldIdentifiers", out var fieldIdentifiers) || fieldIdentifiers.ValueKind != JsonValueKind.Object)
+        {
+            return;
+        }
+
+        foreach (var property in fieldIdentifiers.EnumerateObject())
+        {
+            if (property.Value.ValueKind == JsonValueKind.String
+                && property.Value.TryGetGuid(out var referenceGroup)
+                && referenceGroup != Guid.Empty)
+            {
+                collector.Add(new PageBuilderFieldIdentifier(path, property.Name, referenceGroup));
             }
         }
     }
@@ -297,12 +328,15 @@ internal static class WidgetReferenceReader
     {
         private readonly List<WidgetReference> contentReferences = [];
         private readonly List<WidgetObjectReference> objectReferences = [];
+        private readonly List<PageBuilderFieldIdentifier> fieldIdentifiers = [];
 
         internal void Add(WidgetReference reference) => contentReferences.Add(reference);
 
         internal void Add(WidgetObjectReference reference) => objectReferences.Add(reference);
 
-        internal PageBuilderReferences Build() => new(contentReferences, objectReferences);
+        internal void Add(PageBuilderFieldIdentifier fieldIdentifier) => fieldIdentifiers.Add(fieldIdentifier);
+
+        internal PageBuilderReferences Build() => new(contentReferences, objectReferences, fieldIdentifiers);
     }
 }
 
@@ -359,6 +393,13 @@ internal sealed record WidgetObjectReference(PageBuilderReferencePath Path, stri
     public string TypeIdentifier => Path.TypeIdentifier;
 }
 
+/// <summary>
+/// One <c>fieldIdentifiers</c> entry: the widget variant, section or page template property whose reference rows
+/// carry <paramref name="ReferenceGroup" /> as their <c>ContentItemReferenceGroupGUID</c>.
+/// </summary>
+internal sealed record PageBuilderFieldIdentifier(PageBuilderReferencePath Path, string PropertyName, Guid ReferenceGroup);
+
 internal sealed record PageBuilderReferences(
     IReadOnlyList<WidgetReference> ContentReferences,
-    IReadOnlyList<WidgetObjectReference> ObjectReferences);
+    IReadOnlyList<WidgetObjectReference> ObjectReferences,
+    IReadOnlyList<PageBuilderFieldIdentifier> FieldIdentifiers);
