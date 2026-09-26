@@ -1,7 +1,6 @@
 import {
   BaseEdge,
   EdgeLabelRenderer,
-  getBezierPath,
   type Edge,
   type EdgeProps,
 } from "@xyflow/react";
@@ -11,6 +10,9 @@ import {
   EDGE_LABEL_VERTICAL_CHROME,
   estimateEdgeLabelSegment,
 } from "../shared/edgeLabel";
+import type { SelfLoopSlot } from "../shared/edgeLabelStack";
+import type { EdgeLane } from "../shared/edgeRoute";
+import { useEdgeGeometry } from "../shared/useEdgeLabelTransform";
 
 export interface ClassEdgeData extends Record<string, unknown> {
   /**
@@ -20,6 +22,19 @@ export interface ClassEdgeData extends Record<string, unknown> {
    * relationship, so there is never more than one label to show.
    */
   readonly label?: string;
+  /**
+   * Set only when another edge joins the same pair of nodes, in either
+   * direction: the edges of such a group would otherwise be drawn along one
+   * line, so each is bowed into a lane of its own with its chip on it - see
+   * `edgeRoute.ts`.
+   */
+  readonly lane?: EdgeLane;
+  /**
+   * Set only on an edge from a class to itself - a field that allows its own
+   * content type - which is drawn as a loop around the node, nested and
+   * stacked with any other self-loops of the same node.
+   */
+  readonly selfLoopSlot?: SelfLoopSlot;
 }
 
 export type ClassEdge = Edge<ClassEdgeData, "classEdge">;
@@ -56,6 +71,8 @@ export const estimateClassEdgeLabelSize = (label: string | undefined) => {
  */
 export const ClassEdgeComponent = ({
   id,
+  source,
+  target,
   sourceX,
   sourceY,
   sourcePosition,
@@ -66,13 +83,17 @@ export const ClassEdgeComponent = ({
   style,
   data,
 }: EdgeProps<ClassEdge>) => {
-  const [edgePath, labelX, labelY] = getBezierPath({
+  const { path: edgePath, labelTransform: transform } = useEdgeGeometry({
+    source,
+    target,
     sourceX,
     sourceY,
     sourcePosition,
     targetX,
     targetY,
     targetPosition,
+    lane: data?.lane,
+    selfLoopSlot: data?.selfLoopSlot,
   });
 
   const label = data?.label;
@@ -85,7 +106,7 @@ export const ClassEdgeComponent = ({
           <div
             className="cmg-edge-label nodrag nopan"
             style={{
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+              transform,
             }}
             // A long field name wraps to two lines and is clamped after that,
             // so the full text has to stay reachable from somewhere.

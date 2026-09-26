@@ -1,7 +1,6 @@
 import {
   BaseEdge,
   EdgeLabelRenderer,
-  getBezierPath,
   type Edge,
   type EdgeProps,
 } from "@xyflow/react";
@@ -11,6 +10,9 @@ import {
   EDGE_LABEL_VERTICAL_CHROME,
   estimateEdgeLabelSegment,
 } from "../shared/edgeLabel";
+import type { SelfLoopSlot } from "../shared/edgeLabelStack";
+import type { EdgeLane } from "../shared/edgeRoute";
+import { useEdgeGeometry } from "../shared/useEdgeLabelTransform";
 
 // One reference drawn on an edge. An edge can carry several: a page that points at the same item from its
 // page template and from a widget produces two references between the same pair of nodes, and two edges
@@ -27,6 +29,13 @@ export interface RelationshipEdgeLabelEntry {
 export interface RelationshipEdgeData extends Record<string, unknown> {
   readonly entries: readonly RelationshipEdgeLabelEntry[];
   readonly broken: boolean;
+  // Set only when the reverse reference joins the same pair of nodes (A references B and B references A):
+  // both would run between the same two sides, so each is bowed into a lane of its own with its chip on it -
+  // see `edgeRoute.ts`. References in one direction are already merged into one edge.
+  readonly lane?: EdgeLane;
+  // Set only on an item referencing itself (an item selected in its own field), which is drawn as a loop
+  // around its node - see `edgeLabelStack.ts`.
+  readonly selfLoopSlot?: SelfLoopSlot;
 }
 
 export type RelationshipEdge = Edge<RelationshipEdgeData, "relationshipEdge">;
@@ -163,6 +172,8 @@ export const estimateRelationshipEdgeLabelSize = (
 // from one another, which a single run of text cannot do.
 export const RelationshipEdgeComponent = ({
   id,
+  source,
+  target,
   sourceX,
   sourceY,
   sourcePosition,
@@ -173,13 +184,17 @@ export const RelationshipEdgeComponent = ({
   style,
   data,
 }: EdgeProps<RelationshipEdge>) => {
-  const [edgePath, labelX, labelY] = getBezierPath({
+  const { path: edgePath, labelTransform: transform } = useEdgeGeometry({
+    source,
+    target,
     sourceX,
     sourceY,
     sourcePosition,
     targetX,
     targetY,
     targetPosition,
+    lane: data?.lane,
+    selfLoopSlot: data?.selfLoopSlot,
   });
 
   const entries = data?.entries ?? [];
@@ -196,7 +211,7 @@ export const RelationshipEdgeComponent = ({
               data?.broken ? " cmg-relationships-edge-label--missing" : ""
             }`}
             style={{
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+              transform,
             }}
             title={title}
           >

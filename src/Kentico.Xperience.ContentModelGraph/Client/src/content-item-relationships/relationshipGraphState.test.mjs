@@ -310,3 +310,44 @@ test("the canvas stays sound across arbitrary expand-and-reset sequences", () =>
     assert.deepEqual(reset, pristine, `run ${run}: reset did not restore the graph`);
   }
 });
+
+// --- an item referencing itself -------------------------------------------
+
+// An item selected in its own field is both an incoming and an outgoing reference of itself, and the server
+// reports it in both lists under one id. It is one reference, so it is one self-loop.
+test("an item referencing itself is drawn as one self-loop", () => {
+  const root = item("root");
+  const selfReference = relationship(
+    "item:1=>item:1:group:related",
+    root,
+    "related",
+  );
+  const graph = graphOf(root, {
+    incoming: [{ ...selfReference, direction: "incoming" }],
+    outgoing: [selfReference, relationship("item:1=>item:2", item("a"), "related")],
+  });
+
+  const drawn = canvas(initialItems(graph), initialEdges(graph), "root");
+
+  assertSound(drawn, "self-reference");
+  assert.deepEqual(drawn.nodeIds, ["a", "root"]);
+  assert.deepEqual(drawn.edgePairs, ["root->a", "root->root"]);
+});
+
+test("expanding an item that references itself keeps its one self-loop", () => {
+  const root = item("root");
+  const selfReference = relationship(
+    "item:1=>item:1:group:related",
+    root,
+    "related",
+  );
+  const graph = graphOf(root, { outgoing: [selfReference] });
+  const expanded = mergeExpandedEdges(initialEdges(graph), "root", "incoming", [
+    { ...selfReference, direction: "incoming" },
+  ]);
+
+  const drawn = canvas(initialItems(graph), expanded, "root");
+
+  assertSound(drawn, "self-reference expanded");
+  assert.deepEqual(drawn.edgePairs, ["root->root"]);
+});

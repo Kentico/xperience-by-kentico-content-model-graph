@@ -37,6 +37,8 @@ import {
   RelationshipEdgeComponent,
   type RelationshipEdge,
 } from "./RelationshipEdge";
+import { stackSelfLoops } from "../shared/edgeLabelStack";
+import { assignEdgeLanes } from "../shared/edgeRoute";
 import { nodeColor, type NodeKind } from "../content-model-graph/model";
 import {
   expandKey,
@@ -312,6 +314,11 @@ const layout = (
   };
 
   for (const edge of edges) {
+    // A node is never grouped by a loop back to itself: it names no neighbour to hang the node off.
+    if (edge.source === edge.target) {
+      continue;
+    }
+
     const field = edgeFields.get(edge.id) ?? edge.id;
 
     addAnchor(edge.source, {
@@ -598,7 +605,7 @@ const ContentItemRelationshipsGraph = ({
   const { layoutedNodes, layoutedEdges } = useMemo(() => {
     const mergedEdges = mergeRelationshipEdgeRecords(visibleRecords);
 
-    const flowEdges: RelationshipEdge[] = mergedEdges.map((merged) => {
+    const unslottedEdges: RelationshipEdge[] = mergedEdges.map((merged) => {
       const { id, source, target, records } = merged;
       // An edge touching a deleted item is a broken reference, so it is muted and dashed. Merged records
       // share both endpoints, so they are broken or whole together - there is no mixed case to resolve.
@@ -635,6 +642,27 @@ const ContentItemRelationshipsGraph = ({
           color,
         },
       };
+    });
+
+    // Merging leaves at most one edge per direction between a pair of nodes, but two items that reference
+    // each other still get two edges, which both run between the two nodes' facing sides - so each of the
+    // two is given a lane of its own, bowed apart from the other, with its chip on it.
+    // An item selected in its own field is drawn as a loop around its node instead.
+    const laneInputs = unslottedEdges.map((edge) => ({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      ...estimateRelationshipEdgeLabelSize(edge.data?.entries ?? []),
+    }));
+    const lanes = assignEdgeLanes(laneInputs);
+    const selfLoopSlots = stackSelfLoops(laneInputs);
+    const flowEdges = unslottedEdges.map((edge): RelationshipEdge => {
+      const lane = lanes.get(edge.id);
+      const selfLoopSlot = selfLoopSlots.get(edge.id);
+
+      return (lane || selfLoopSlot) && edge.data
+        ? { ...edge, data: { ...edge.data, lane, selfLoopSlot } }
+        : edge;
     });
 
     const flowNodes: RelationshipNode[] = Array.from(visibleItems.entries())

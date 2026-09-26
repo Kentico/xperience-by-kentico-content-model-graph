@@ -290,6 +290,24 @@ public sealed class ContentModelGraphBuilder(
         }
     }
 
+    /// <summary>
+    /// The edges one class's own fields produce, resolved on their own - the same edges <see cref="Build" />
+    /// adds for the class before merging them with every other class's.
+    /// </summary>
+    internal static IReadOnlyList<GraphEdge> CreateFieldEdges(
+        IEnumerable<XElement> fields,
+        string className,
+        IDictionary<Guid, string> classNamesByGuid,
+        IDictionary<Guid, string> schemaNames,
+        IDictionary<Guid, string> taxonomyNames,
+        bool includeTaxonomyReferences)
+    {
+        var edges = new Dictionary<string, EdgeAccumulator>(StringComparer.OrdinalIgnoreCase);
+        AddFieldEdges(fields, ClassNodeId(className), classNamesByGuid, schemaNames, taxonomyNames, includeTaxonomyReferences, edges);
+
+        return [.. edges.Values.Select(edge => edge.ToEdge())];
+    }
+
     private static void AddTaxonomyFieldEdges(
         IEnumerable<XElement> fields,
         string nodeId,
@@ -349,11 +367,8 @@ public sealed class ContentModelGraphBuilder(
         string kind,
         string label)
     {
-        if (string.Equals(source, target, StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
+        // An edge whose source is its own target is kept: a field may reference its own class - Dancing
+        // Goat's ArticlePage allows ArticlePage items in ArticleRelatedPages - and the client draws it as a loop.
         string id = $"{source}|{target}|{kind}";
         if (!edges.TryGetValue(id, out var edge))
         {

@@ -34,6 +34,8 @@ import {
   estimateClassEdgeLabelSize,
   type ClassEdge,
 } from "./ClassEdge";
+import { stackSelfLoops } from "../shared/edgeLabelStack";
+import { assignEdgeLanes, EDGE_LANE_GAP } from "../shared/edgeRoute";
 import {
   edgeKinds,
   edgeStyle,
@@ -147,15 +149,30 @@ const layout = (
   //
   // Two fields of one class pointing at the same class are two edges between
   // the same pair of nodes, and this is not a multigraph, so the second
-  // reservation would replace the first: the larger of the two is kept, which
-  // is the one that has to fit.
+  // reservation would replace the first. Their curves are bowed into lanes
+  // side by side across the line between the two nodes (see `edgeRoute.ts`) -
+  // down the page under `LR`, across it under `TB` - so the reservation grows
+  // to hold every chip in that direction, and the largest in the other. The
+  // chips of several self-loops on one node are always stacked down the page.
+  const combine = (reserved: number, size: number) =>
+    reserved > 0 && size > 0
+      ? reserved + EDGE_LANE_GAP + size
+      : Math.max(reserved, size);
+
   edges.forEach((edge) => {
     const { width, height } = estimateClassEdgeLabelSize(edge.data?.label);
     const reserved = graph.edge(edge.source, edge.target);
+    const reservedWidth = reserved?.width ?? 0;
+    const reservedHeight = reserved?.height ?? 0;
+    const stacksDown = direction === "LR" || edge.source === edge.target;
 
     graph.setEdge(edge.source, edge.target, {
-      width: Math.max(width, reserved?.width ?? 0),
-      height: Math.max(height, reserved?.height ?? 0),
+      width: stacksDown
+        ? Math.max(width, reservedWidth)
+        : combine(reservedWidth, width),
+      height: stacksDown
+        ? combine(reservedHeight, height)
+        : Math.max(height, reservedHeight),
       labelpos: "c",
     });
   });
@@ -270,7 +287,7 @@ const ContentModelGraph = ({
         .map((node) => node.id),
     );
 
-    const flowEdges: ClassEdge[] = data.edges
+    const unslottedEdges: ClassEdge[] = data.edges
       .filter(
         (edge) =>
           visibleEdgeKinds.includes(edge.kind) &&
@@ -303,6 +320,28 @@ const ContentModelGraph = ({
           markerEnd: { type: MarkerType.ArrowClosed, color: style?.color },
         };
       });
+
+    // Edges sharing a pair of nodes - two fields pointing the same way, or two
+    // classes referencing each other - would be drawn along one line, so each
+    // such edge is given a lane of its own.
+    // A class referencing itself is drawn as a loop around its node instead,
+    // and several such loops on one node are nested with their chips stacked.
+    const laneInputs = unslottedEdges.map((edge) => ({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      ...estimateClassEdgeLabelSize(edge.data?.label),
+    }));
+    const lanes = assignEdgeLanes(laneInputs);
+    const selfLoopSlots = stackSelfLoops(laneInputs);
+    const flowEdges = unslottedEdges.map((edge): ClassEdge => {
+      const lane = lanes.get(edge.id);
+      const selfLoopSlot = selfLoopSlots.get(edge.id);
+
+      return lane || selfLoopSlot
+        ? { ...edge, data: { ...edge.data, lane, selfLoopSlot } }
+        : edge;
+    });
 
     // Absent on the unfiltered graph, which has no focal node - the three
     // contextual pages are the only ones that filter to one node's

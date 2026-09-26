@@ -71,6 +71,28 @@ public class ContentModelGraphNeighborhoodTests
         });
     }
 
+    [Test]
+    public void Filter_KeepsASelfReference()
+    {
+        var graph = new GraphData
+        {
+            Nodes = [Node("class:article"), Node("class:product")],
+            Edges =
+            [
+                Edge("article-article", "class:article", "class:article"),
+                Edge("article-product", "class:article", "class:product")
+            ]
+        };
+
+        var result = ContentModelGraphNeighborhood.Filter(graph, "class:article");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Nodes.Select(node => node.Id), Is.EquivalentTo(new[] { "class:article", "class:product" }));
+            Assert.That(result.Edges.Select(edge => edge.Id), Is.EquivalentTo(new[] { "article-article", "article-product" }));
+        });
+    }
+
     private static GraphData CreateGraph() => new()
     {
         Nodes =
