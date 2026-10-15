@@ -5,7 +5,7 @@ using Kentico.Xperience.Admin.Base.UIPages;
     typeof(ContentItemEditSection),
     Kentico.Xperience.ContentModelGraph.ContentModelGraphSlugs.Relationships,
     typeof(Kentico.Xperience.ContentModelGraph.ContentItemRelationshipsPage),
-    "Content relationships",
+    "Content graph (Labs)",
     "@kentico/xperience-content-model-graph/ContentItemRelationships",
     1001,
     Icon = Icons.ProjectScheme)]

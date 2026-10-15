@@ -16,7 +16,7 @@ using Kentico.Xperience.ContentModelGraph;
 builder.Services.AddContentModelGraph();
 ```
 
-The referenced assembly registers the administration application and embedded client assets automatically. The application appears as **Content model graph** in the **Development** category. The category is only where it is listed - opening it needs the application's **View** permission, granted to a role in _Role management_, which administrators have implicitly.
+The referenced assembly registers the administration application and embedded client assets automatically. The application appears as **Content model graph (Labs)** in the **Development** category. The category is only where it is listed - opening it needs the application's **View** permission, granted to a role in _Role management_, which administrators have implicitly.
 
 ## Graph Data
 
@@ -40,13 +40,13 @@ Graph data is cached for 60 minutes. **Clear cache** invalidates the shared cach
 
 ## Contextual Graphs
 
-Content types, reusable field schemas, and taxonomies each have their own **Content model graph** tab. The tab shows the same graph filtered to the selected object and the nodes it is directly connected to, with the selected node marked as the current item. Field names are shown by default there.
+Content types, reusable field schemas, and taxonomies each have their own **Content model graph (Labs)** tab. The tab shows the same graph filtered to the selected object and the nodes it is directly connected to, with the selected node marked as the current item. Field names are shown by default there.
 
-Forms have no such tab - a form takes part in no schema-level relationships - and use the **Content relationships** page described below instead.
+Forms have no such tab - a form takes part in no schema-level relationships - and use the **Content graph (Labs)** page described below instead.
 
 ## Content Item Relationships
 
-Open a content item and select **Content relationships** to inspect item-level references for the current language. The page is available for reusable content items in the Content hub, web pages, emails, headless items, and forms.
+Open a content item and select **Content graph (Labs)** to inspect item-level references for the current language. The page is available for reusable content items in the Content hub, web pages, emails, headless items, and forms.
 
 The page draws the current item, the items that reference it, and the items it references. Every content item node can be expanded in either direction to walk further out, and the canvas keeps what has been expanded. The toolbar changes layout direction, hides or shows reference labels, fits the view, resets back to the initial one-hop graph, and exports the current canvas as JSON - including the language the graph was requested in and the language each item was actually read in. The search box highlights nodes by name, and a minimap toggle sits in the bottom right corner.
 
@@ -57,7 +57,7 @@ Relationships are read from:
 - Taxonomy fields. Selected tags are drawn as terminal nodes that link to the tag in the administration.
 - Forms embedded by the Form Widget. Forms are drawn as terminal nodes that link to the form.
 
-A form's own **Content relationships** page reverses the last of these: it shows the content items whose Page Builder configuration embeds the form, read in the default content language. The graph is capped, and reports the total when it shows only part of it. Forms rendered directly from view code, or referenced by submission notifications, campaigns, and automation processes, are not tracked and do not appear.
+A form's own **Content graph (Labs)** page reverses the last of these: it shows the content items whose Page Builder configuration embeds the form, read in the default content language. The graph is capped, and reports the total when it shows only part of it. Forms rendered directly from view code, or referenced by submission notifications, campaigns, and automation processes, are not tracked and do not appear.
 
 Items deleted after the graph was drawn render as **missing** nodes: the metadata already loaded for them is kept so the broken reference stays visible, but they cannot be expanded.
 

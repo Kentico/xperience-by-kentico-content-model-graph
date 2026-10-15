@@ -9,7 +9,7 @@ using Kentico.Xperience.Admin.DigitalMarketing.UIPages;
     typeof(FormEditSection),
     Kentico.Xperience.ContentModelGraph.ContentModelGraphSlugs.Relationships,
     typeof(Kentico.Xperience.ContentModelGraph.FormRelationshipsPage),
-    "Content relationships",
+    "Content graph (Labs)",
     "@kentico/xperience-content-model-graph/ContentItemRelationships",
     Kentico.Xperience.ContentModelGraph.ContentModelGraphPageOrder.BeforeLast,
     Icon = Icons.ProjectScheme)]

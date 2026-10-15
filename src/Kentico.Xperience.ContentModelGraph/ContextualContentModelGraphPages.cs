@@ -10,7 +10,7 @@ using Kentico.Xperience.ContentModelGraph;
     typeof(ContentTypeEditSection),
     ContentModelGraphSlugs.ContentModelGraph,
     typeof(ContentTypeModelGraphPage),
-    "Content model graph",
+    "Content model graph (Labs)",
     "@kentico/xperience-content-model-graph/ContentModelGraph",
     ContentModelGraphPageOrder.Last,
     Icon = Icons.ProjectScheme)]
@@ -19,7 +19,7 @@ using Kentico.Xperience.ContentModelGraph;
     typeof(ReusableFieldSchemaEditSection),
     ContentModelGraphSlugs.ContentModelGraph,
     typeof(ReusableFieldSchemaModelGraphPage),
-    "Content model graph",
+    "Content model graph (Labs)",
     "@kentico/xperience-content-model-graph/ContentModelGraph",
     ContentModelGraphPageOrder.Last,
     Icon = Icons.ProjectScheme)]
@@ -28,7 +28,7 @@ using Kentico.Xperience.ContentModelGraph;
     typeof(TaxonomyEditSection),
     ContentModelGraphSlugs.ContentModelGraph,
     typeof(TaxonomyModelGraphPage),
-    "Content model graph",
+    "Content model graph (Labs)",
     "@kentico/xperience-content-model-graph/ContentModelGraph",
     ContentModelGraphPageOrder.Last,
     Icon = Icons.ProjectScheme)]
@@ -40,14 +40,14 @@ internal static class ContentModelGraphPageOrder
     public const int Last = UIPageOrder.NoOrder + 100;
 
     /// <summary>
-    /// For surfaces that host both of this module's tabs, so "Content relationships" stays immediately to the
-    /// left of "Content model graph" - the same order they appear in on content items.
+    /// For surfaces that host both of this module's tabs, so "Content graph (Labs)" stays immediately to the
+    /// left of "Content model graph (Labs)" - the same order they appear in on content items.
     /// </summary>
     public const int BeforeLast = Last - 1;
 
     /// <summary>
     /// After every tab the Websites application registers on <c>WebPageLayout</c> - the highest is
-    /// "root-properties" at 10100 - so "Content relationships" sorts last on a web page and, should the
+    /// "root-properties" at 10100 - so "Content graph (Labs)" sorts last on a web page and, should the
     /// navigation extender ever fail to hide it, on a channel root too.
     /// </summary>
     public const int AfterWebPageLayoutTabs = 10200;
