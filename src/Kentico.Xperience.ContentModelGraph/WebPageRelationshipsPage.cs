@@ -10,7 +10,7 @@ using Kentico.Xperience.Admin.Websites.UIPages;
     typeof(WebPageLayout),
     Kentico.Xperience.ContentModelGraph.ContentModelGraphSlugs.Relationships,
     typeof(Kentico.Xperience.ContentModelGraph.WebPageRelationshipsPage),
-    "Content relationships",
+    "Content graph (Labs)",
     "@kentico/xperience-content-model-graph/ContentItemRelationships",
     Kentico.Xperience.ContentModelGraph.ContentModelGraphPageOrder.AfterWebPageLayoutTabs,
     Icon = Icons.ProjectScheme)]

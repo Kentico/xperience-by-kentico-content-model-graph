@@ -9,7 +9,7 @@ using Kentico.Xperience.Admin.DigitalMarketing.UIPages;
     typeof(EmailEditLayout),
     Kentico.Xperience.ContentModelGraph.ContentModelGraphSlugs.Relationships,
     typeof(Kentico.Xperience.ContentModelGraph.EmailRelationshipsPage),
-    "Content relationships",
+    "Content graph (Labs)",
     "@kentico/xperience-content-model-graph/ContentItemRelationships",
     1001,
     Icon = Icons.ProjectScheme)]

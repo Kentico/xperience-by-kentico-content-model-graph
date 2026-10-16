@@ -22,7 +22,7 @@ internal static class ContentModelGraphSlugs
 }
 
 /// <summary>
-/// Puts "Content model graph" at the end of a content type's navigation.
+/// Puts "Content model graph (Labs)" at the end of a content type's navigation.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -55,7 +55,7 @@ internal sealed class ContentTypeEditSectionNavigationExtender : PageExtender<Co
 }
 
 /// <summary>
-/// Hides "Content relationships" on a website channel root.
+/// Hides "Content graph (Labs)" on a website channel root.
 /// </summary>
 /// <remarks>
 /// <para>

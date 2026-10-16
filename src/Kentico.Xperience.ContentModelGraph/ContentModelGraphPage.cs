@@ -10,7 +10,7 @@ using Kentico.Xperience.Admin.Base.UIPages;
     identifier: Kentico.Xperience.ContentModelGraph.ContentModelGraphPage.IDENTIFIER,
     type: typeof(Kentico.Xperience.ContentModelGraph.ContentModelGraphPage),
     slug: "content-model-graph",
-    name: "Content model graph",
+    name: "Content model graph (Labs)",
     category: BaseApplicationCategories.DEVELOPMENT,
     icon: Icons.ProjectScheme,
     templateName: "@kentico/xperience-content-model-graph/ContentModelGraph")]

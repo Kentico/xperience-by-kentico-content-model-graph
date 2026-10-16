@@ -30,7 +30,7 @@ npm run start --prefix .\src\Kentico.Xperience.ContentModelGraph\Client
 dotnet watch run --project .\examples\DancingGoat\DancingGoat.csproj
 ```
 
-Open the administration at the URL configured in `examples/DancingGoat/Properties/launchSettings.json`, then select **Content model graph** from the **Development** category.
+Open the administration at the URL configured in `examples/DancingGoat/Properties/launchSettings.json`, then select **Content model graph (Labs)** from the **Development** category.
 
 ## MCP Servers
 
