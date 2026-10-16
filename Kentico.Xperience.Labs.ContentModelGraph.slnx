@@ -3,9 +3,9 @@
     <Project Path="examples/DancingGoat/DancingGoat.csproj" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/Kentico.Xperience.Labs.ContentModelGraph/Kentico.Xperience.Labs.ContentModelGraph.csproj" />
+    <Project Path="src/Kentico.Xperience.Labs.ContentModelGraph.Admin/Kentico.Xperience.Labs.ContentModelGraph.Admin.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/Kentico.Xperience.Labs.ContentModelGraph.Tests/Kentico.Xperience.Labs.ContentModelGraph.Tests.csproj" />
+    <Project Path="tests/Kentico.Xperience.Labs.ContentModelGraph.Admin.Tests/Kentico.Xperience.Labs.ContentModelGraph.Admin.Tests.csproj" />
   </Folder>
 </Solution>

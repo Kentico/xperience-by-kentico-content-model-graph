@@ -62,19 +62,19 @@ Watch and see how you can use this library to explore the entire data model of y
 ## Package Installation
 
 ```powershell
-dotnet add package Kentico.Xperience.Labs.ContentModelGraph --version 2.0.0
+dotnet add package Kentico.Xperience.Labs.ContentModelGraph.Admin --version 2.0.0
 ```
 
 ## Migrating from `Kentico.Xperience.ContentModelGraph`
 
-Version 1.1.0 was the final release under the old package ID. Replace the package reference with `Kentico.Xperience.Labs.ContentModelGraph` 2.0.0 and update `using Kentico.Xperience.ContentModelGraph;` to `using Kentico.Xperience.Labs.ContentModelGraph;`. 2.0.0 is functionally equal to 1.1.0.
+Version 1.1.0 was the final release under the old package ID. Replace the package reference with `Kentico.Xperience.Labs.ContentModelGraph.Admin` 2.0.0 and update `using Kentico.Xperience.ContentModelGraph;` to `using Kentico.Xperience.Labs.ContentModelGraph.Admin;`. 2.0.0 is functionally equal to 1.1.0.
 
 ## Quick Start
 
 Register the graph builder before building the application:
 
 ```csharp
-using Kentico.Xperience.Labs.ContentModelGraph;
+using Kentico.Xperience.Labs.ContentModelGraph.Admin;
 
 builder.Services.AddContentModelGraph();
 ```

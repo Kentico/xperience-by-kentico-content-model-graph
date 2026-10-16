@@ -10,8 +10,8 @@
 ## Restore and Build
 
 ```powershell
-npm install --prefix .\src\Kentico.Xperience.Labs.ContentModelGraph\Client
-npm run build --prefix .\src\Kentico.Xperience.Labs.ContentModelGraph\Client
+npm install --prefix .\src\Kentico.Xperience.Labs.ContentModelGraph.Admin\Client
+npm run build --prefix .\src\Kentico.Xperience.Labs.ContentModelGraph.Admin\Client
 dotnet restore .\Kentico.Xperience.Labs.ContentModelGraph.slnx
 dotnet build .\Kentico.Xperience.Labs.ContentModelGraph.slnx --no-restore
 dotnet test .\Kentico.Xperience.Labs.ContentModelGraph.slnx --no-build --no-restore
@@ -26,7 +26,7 @@ The example references the library project, registers `AddContentModelGraph()`, 
 Start both processes:
 
 ```powershell
-npm run start --prefix .\src\Kentico.Xperience.Labs.ContentModelGraph\Client
+npm run start --prefix .\src\Kentico.Xperience.Labs.ContentModelGraph.Admin\Client
 dotnet watch run --project .\examples\DancingGoat\DancingGoat.csproj
 ```
 

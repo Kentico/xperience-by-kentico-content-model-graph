@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -20,7 +20,7 @@ using Kentico.Web.Mvc;
 using Kentico.Xperience.ManagementApi;
 using Kentico.Xperience.Mjml;
 #if !SEPARATED_ADMIN
-using Kentico.Xperience.Labs.ContentModelGraph;
+using Kentico.Xperience.Labs.ContentModelGraph.Admin;
 #endif
 
 using Microsoft.AspNetCore.Builder;

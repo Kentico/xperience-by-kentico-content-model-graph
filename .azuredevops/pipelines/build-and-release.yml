@@ -43,7 +43,7 @@ stages:
             inputs:
               targetType: inline
               script: |
-                $fileContent = Get-Content -Path 'src/Kentico.Xperience.Labs.ContentModelGraph/Client/package.json' -Raw
+                $fileContent = Get-Content -Path 'src/Kentico.Xperience.Labs.ContentModelGraph.Admin/Client/package.json' -Raw
                 $jsonObject = ConvertFrom-Json -InputObject $fileContent
 
                 # Get the value of engines.node
@@ -96,15 +96,15 @@ stages:
             inputs:
               command: custom
               customCommand: run typecheck
-              workingDir: src/Kentico.Xperience.Labs.ContentModelGraph/Client
+              workingDir: src/Kentico.Xperience.Labs.ContentModelGraph.Admin/Client
 
           - template: steps.yml
             parameters:
               Configuration: $(Configuration)
               artifacts:
                 - Core:
-                  artifactName: "Kentico.Xperience.Labs.ContentModelGraph"
-                  projectPath: "src/Kentico.Xperience.Labs.ContentModelGraph"
+                  artifactName: "Kentico.Xperience.Labs.ContentModelGraph.Admin"
+                  projectPath: "src/Kentico.Xperience.Labs.ContentModelGraph.Admin"
 
   - stage: PublishNuGetPackages
     displayName: Publish NuGet packages

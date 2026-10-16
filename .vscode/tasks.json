@@ -6,7 +6,7 @@
       "command": "npm",
       "args": ["install"],
       "options": {
-        "cwd": "${workspaceFolder}/src/Kentico.Xperience.Labs.ContentModelGraph/Client"
+        "cwd": "${workspaceFolder}/src/Kentico.Xperience.Labs.ContentModelGraph.Admin/Client"
       },
       "group": "build",
       "problemMatcher": [],
@@ -45,7 +45,7 @@
       "command": "npm",
       "args": ["run", "build"],
       "options": {
-        "cwd": "${workspaceFolder}/src/Kentico.Xperience.Labs.ContentModelGraph/Client"
+        "cwd": "${workspaceFolder}/src/Kentico.Xperience.Labs.ContentModelGraph.Admin/Client"
       },
       "group": "build",
       "problemMatcher": [],
@@ -57,7 +57,7 @@
       "command": "npm",
       "args": ["run", "build:dev"],
       "options": {
-        "cwd": "${workspaceFolder}/src/Kentico.Xperience.Labs.ContentModelGraph/Client"
+        "cwd": "${workspaceFolder}/src/Kentico.Xperience.Labs.ContentModelGraph.Admin/Client"
       },
       "group": "build",
       "problemMatcher": [],
@@ -69,7 +69,7 @@
       "command": "npm",
       "args": ["run", "start"],
       "options": {
-        "cwd": "${workspaceFolder}/src/Kentico.Xperience.Labs.ContentModelGraph/Client"
+        "cwd": "${workspaceFolder}/src/Kentico.Xperience.Labs.ContentModelGraph.Admin/Client"
       },
       "problemMatcher": [],
       "label": "npm: watch - Admin/Client",

@@ -35,7 +35,7 @@
   "dotnet.solution.autoOpen": "Kentico.Xperience.Labs.ContentModelGraph.slnx",
 
   "eslint.workingDirectories": [
-    "./src/Kentico.Xperience.Labs.ContentModelGraph/Client"
+    "./src/Kentico.Xperience.Labs.ContentModelGraph.Admin/Client"
   ],
 
   "files.associations": {

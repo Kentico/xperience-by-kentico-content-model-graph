@@ -22,7 +22,7 @@
         <DefineConstants>$(DefineConstants);SEPARATED_ADMIN</DefineConstants>
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Kentico.Xperience.Labs.ContentModelGraph\Kentico.Xperience.Labs.ContentModelGraph.csproj" Condition="'$(SeparatedAdmin)' == 'false'" />
+        <ProjectReference Include="..\..\src\Kentico.Xperience.Labs.ContentModelGraph.Admin\Kentico.Xperience.Labs.ContentModelGraph.Admin.csproj" Condition="'$(SeparatedAdmin)' == 'false'" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Kentico.Xperience.Admin" Condition="'$(SeparatedAdmin)' == 'false'" />
