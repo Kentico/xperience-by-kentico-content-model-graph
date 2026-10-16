@@ -10,7 +10,7 @@ module.exports = (opts, argv) => {
   const baseConfig = (webpackConfigEnv, webpackArgv) =>
     baseWebpackConfig({
       orgName: "kentico",
-      projectName: "xperience-content-model-graph",
+      projectName: "xperience-labs-content-model-graph-admin",
       webpackConfigEnv,
       argv: webpackArgv,
     });

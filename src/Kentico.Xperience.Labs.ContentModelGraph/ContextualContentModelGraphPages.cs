@@ -11,7 +11,7 @@ using Kentico.Xperience.Labs.ContentModelGraph;
     ContentModelGraphSlugs.ContentModelGraph,
     typeof(ContentTypeModelGraphPage),
     "Content model graph (Labs)",
-    "@kentico/xperience-content-model-graph/ContentModelGraph",
+    "@kentico/xperience-labs-content-model-graph-admin/ContentModelGraph",
     ContentModelGraphPageOrder.Last,
     Icon = Icons.ProjectScheme)]
 
@@ -20,7 +20,7 @@ using Kentico.Xperience.Labs.ContentModelGraph;
     ContentModelGraphSlugs.ContentModelGraph,
     typeof(ReusableFieldSchemaModelGraphPage),
     "Content model graph (Labs)",
-    "@kentico/xperience-content-model-graph/ContentModelGraph",
+    "@kentico/xperience-labs-content-model-graph-admin/ContentModelGraph",
     ContentModelGraphPageOrder.Last,
     Icon = Icons.ProjectScheme)]
 
@@ -29,7 +29,7 @@ using Kentico.Xperience.Labs.ContentModelGraph;
     ContentModelGraphSlugs.ContentModelGraph,
     typeof(TaxonomyModelGraphPage),
     "Content model graph (Labs)",
-    "@kentico/xperience-content-model-graph/ContentModelGraph",
+    "@kentico/xperience-labs-content-model-graph-admin/ContentModelGraph",
     ContentModelGraphPageOrder.Last,
     Icon = Icons.ProjectScheme)]
 

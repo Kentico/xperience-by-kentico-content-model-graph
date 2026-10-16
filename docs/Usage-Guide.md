@@ -77,7 +77,7 @@ Configure the host application's user secrets:
 ```json
 {
   "CMSAdminClientModuleSettings": {
-    "kentico-xperience-content-model-graph": {
+    "kentico-xperience-labs-content-model-graph-admin": {
       "Mode": "Proxy",
       "Port": 3009
     }
@@ -90,7 +90,7 @@ For normal builds and deployments, use embedded mode:
 ```json
 {
   "CMSAdminClientModuleSettings": {
-    "kentico-xperience-content-model-graph": {
+    "kentico-xperience-labs-content-model-graph-admin": {
       "Mode": "Embedded"
     }
   }

@@ -13,7 +13,7 @@ using Kentico.Xperience.Admin.Base.UIPages;
     name: "Content model graph (Labs)",
     category: BaseApplicationCategories.DEVELOPMENT,
     icon: Icons.ProjectScheme,
-    templateName: "@kentico/xperience-content-model-graph/ContentModelGraph")]
+    templateName: "@kentico/xperience-labs-content-model-graph-admin/ContentModelGraph")]
 
 namespace Kentico.Xperience.Labs.ContentModelGraph;
 

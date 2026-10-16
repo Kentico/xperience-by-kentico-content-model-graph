@@ -11,7 +11,7 @@ using Kentico.Xperience.Admin.Websites.UIPages;
     Kentico.Xperience.Labs.ContentModelGraph.ContentModelGraphSlugs.Relationships,
     typeof(Kentico.Xperience.Labs.ContentModelGraph.WebPageRelationshipsPage),
     "Content graph (Labs)",
-    "@kentico/xperience-content-model-graph/ContentItemRelationships",
+    "@kentico/xperience-labs-content-model-graph-admin/ContentItemRelationships",
     Kentico.Xperience.Labs.ContentModelGraph.ContentModelGraphPageOrder.AfterWebPageLayoutTabs,
     Icon = Icons.ProjectScheme)]
 

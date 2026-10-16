@@ -16,6 +16,6 @@ internal sealed class ContentModelGraphWebAdminModule : AdminModule
     {
         base.OnInit();
 
-        RegisterClientModule("kentico", "xperience-content-model-graph");
+        RegisterClientModule("kentico", "xperience-labs-content-model-graph-admin");
     }
 }

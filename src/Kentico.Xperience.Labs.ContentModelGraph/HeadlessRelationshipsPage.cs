@@ -10,7 +10,7 @@ using Kentico.Xperience.Admin.Headless.UIPages;
     Kentico.Xperience.Labs.ContentModelGraph.ContentModelGraphSlugs.Relationships,
     typeof(Kentico.Xperience.Labs.ContentModelGraph.HeadlessRelationshipsPage),
     "Content graph (Labs)",
-    "@kentico/xperience-content-model-graph/ContentItemRelationships",
+    "@kentico/xperience-labs-content-model-graph-admin/ContentItemRelationships",
     1001,
     Icon = Icons.ProjectScheme)]
 
