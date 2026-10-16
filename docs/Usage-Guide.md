@@ -1,20 +1,17 @@
 # Usage Guide
 
-> [!WARNING]
-> Version 1.1.0 is the final release under the `Kentico.Xperience.ContentModelGraph` package ID. Future releases ship as `Kentico.Xperience.Labs.ContentModelGraph` with the `Kentico.Xperience.Labs.ContentModelGraph` namespace. Find outdated references with `dotnet list package --deprecated`.
-
 ## Setup
 
 Add the package to the Xperience ASP.NET Core application:
 
 ```powershell
-dotnet add package Kentico.Xperience.ContentModelGraph --version 1.1.0
+dotnet add package Kentico.Xperience.Labs.ContentModelGraph --version 2.0.0
 ```
 
 Register the library services in `Program.cs` before `builder.Build()`:
 
 ```csharp
-using Kentico.Xperience.ContentModelGraph;
+using Kentico.Xperience.Labs.ContentModelGraph;
 
 builder.Services.AddContentModelGraph();
 ```
@@ -71,8 +68,8 @@ Each item in the graph is checked against the surface it lives on: reusable item
 Install dependencies and run the development server:
 
 ```powershell
-npm install --prefix .\src\Kentico.Xperience.ContentModelGraph\Client
-npm run start --prefix .\src\Kentico.Xperience.ContentModelGraph\Client
+npm install --prefix .\src\Kentico.Xperience.Labs.ContentModelGraph\Client
+npm run start --prefix .\src\Kentico.Xperience.Labs.ContentModelGraph\Client
 ```
 
 Configure the host application's user secrets:
@@ -103,6 +100,6 @@ For normal builds and deployments, use embedded mode:
 Build the production client before building or packing the library:
 
 ```powershell
-npm run build --prefix .\src\Kentico.Xperience.ContentModelGraph\Client
-dotnet build .\Kentico.Xperience.ContentModelGraph.slnx
+npm run build --prefix .\src\Kentico.Xperience.Labs.ContentModelGraph\Client
+dotnet build .\Kentico.Xperience.Labs.ContentModelGraph.slnx
 ```

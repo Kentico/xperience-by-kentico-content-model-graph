@@ -987,7 +987,7 @@
           "System.IO.Hashing": "8.0.0"
         }
       },
-      "kentico.xperience.contentmodelgraph": {
+      "Kentico.Xperience.Labs.ContentModelGraph": {
         "type": "Project",
         "dependencies": {
           "Kentico.Xperience.Admin": "[31.7.3, )"

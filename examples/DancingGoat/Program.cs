@@ -20,7 +20,7 @@ using Kentico.Web.Mvc;
 using Kentico.Xperience.ManagementApi;
 using Kentico.Xperience.Mjml;
 #if !SEPARATED_ADMIN
-using Kentico.Xperience.ContentModelGraph;
+using Kentico.Xperience.Labs.ContentModelGraph;
 #endif
 
 using Microsoft.AspNetCore.Builder;
