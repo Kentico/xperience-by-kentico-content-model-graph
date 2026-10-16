@@ -20,6 +20,7 @@ namespace Kentico.Xperience.ContentModelGraph;
 /// <summary>
 /// Decides which content items the current administration user is allowed to see in the relationship graph.
 /// </summary>
+[Obsolete(DeprecationMessages.PackageRenamed, DiagnosticId = DeprecationMessages.DiagnosticId, UrlFormat = DeprecationMessages.Url)]
 public interface IContentItemGraphPermissionEvaluator
 {
     /// <summary>

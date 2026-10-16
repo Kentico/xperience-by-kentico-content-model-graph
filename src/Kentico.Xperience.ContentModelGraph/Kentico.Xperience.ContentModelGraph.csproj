@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Title>Xperience by Kentico: Content Model Graph</Title>
-    <Description>Visualizes Xperience content types, reusable field schemas, taxonomies, forms, and object type relationships in the administration.</Description>
+    <Description>DEPRECATED: replaced by Kentico.Xperience.Labs.ContentModelGraph. Visualizes Xperience content types, reusable field schemas, taxonomies, forms, and object type relationships in the administration.</Description>
     <AdminOrgName>kentico</AdminOrgName>
   </PropertyGroup>
 

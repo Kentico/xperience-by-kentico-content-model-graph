@@ -3,8 +3,10 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Kentico.Xperience.ContentModelGraph;
 
+[Obsolete(DeprecationMessages.PackageRenamed, DiagnosticId = DeprecationMessages.DiagnosticId, UrlFormat = DeprecationMessages.Url)]
 public static class ServiceCollectionExtensions
 {
+    [Obsolete(DeprecationMessages.PackageRenamed, DiagnosticId = DeprecationMessages.DiagnosticId, UrlFormat = DeprecationMessages.Url)]
     public static IServiceCollection AddContentModelGraph(this IServiceCollection services)
     {
         services.TryAddSingleton<IContentModelGraphBuilder, ContentModelGraphBuilder>();
