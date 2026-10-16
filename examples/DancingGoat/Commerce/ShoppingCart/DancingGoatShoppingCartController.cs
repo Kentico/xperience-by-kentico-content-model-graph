@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -34,8 +34,10 @@ public sealed class DancingGoatShoppingCartController : Controller
     private readonly WebPageUrlProvider webPageUrlProvider;
     private readonly ProductRepository productRepository;
     private readonly PromotionCouponRepository promotionCouponRepository;
+    private readonly PromotionRepository promotionRepository;
     private readonly CalculationService calculationService;
     private readonly UpsellOrderDiscountService upsellOrderDiscountService;
+    private readonly UpsellFreeShippingService upsellFreeShippingService;
     private readonly IStringLocalizer<SharedResources> localizer;
     private readonly IPriceFormatter priceFormatter;
 
@@ -45,6 +47,14 @@ public sealed class DancingGoatShoppingCartController : Controller
     public const string ADD_COUPON_CODE = "AddCoupon";
     public const string REMOVE_COUPON_CODE = "RemoveCoupon";
 
+    /// <summary>
+    /// Request header a background cart update sets to ask for the changed regions instead of a redirect.
+    /// </summary>
+    private const string CART_UPDATE_HEADER = "X-Cart-Update";
+
+    private const string COUPON_CODE_ATTEMPT_TEMPDATA_KEY = "CouponCodeAttempt";
+    private const string COUPON_CODE_ERROR_TEMPDATA_KEY = "CouponCodeError";
+
 
     public DancingGoatShoppingCartController(
         ICurrentShoppingCartRetriever currentShoppingCartRetriever,
@@ -53,8 +63,10 @@ public sealed class DancingGoatShoppingCartController : Controller
         WebPageUrlProvider webPageUrlProvider,
         ProductRepository productRepository,
         PromotionCouponRepository promotionCouponRepository,
+        PromotionRepository promotionRepository,
         CalculationService calculationService,
         UpsellOrderDiscountService upsellOrderDiscountService,
+        UpsellFreeShippingService upsellFreeShippingService,
         IStringLocalizer<SharedResources> localizer,
         IPriceFormatter priceFormatter)
     {
@@ -64,8 +76,10 @@ public sealed class DancingGoatShoppingCartController : Controller
         this.webPageUrlProvider = webPageUrlProvider;
         this.productRepository = productRepository;
         this.promotionCouponRepository = promotionCouponRepository;
+        this.promotionRepository = promotionRepository;
         this.calculationService = calculationService;
         this.upsellOrderDiscountService = upsellOrderDiscountService;
+        this.upsellFreeShippingService = upsellFreeShippingService;
         this.localizer = localizer;
         this.priceFormatter = priceFormatter;
     }
@@ -73,10 +87,21 @@ public sealed class DancingGoatShoppingCartController : Controller
 
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
+        return View(await BuildShoppingCartViewModel(cancellationToken,
+            TempData[COUPON_CODE_ATTEMPT_TEMPDATA_KEY] as string,
+            TempData[COUPON_CODE_ERROR_TEMPDATA_KEY] as string));
+    }
+
+
+    /// <summary>
+    /// Builds the view model behind the cart page and behind the partial that background updates swap in.
+    /// </summary>
+    private async Task<ShoppingCartViewModel> BuildShoppingCartViewModel(CancellationToken cancellationToken, string couponCodeAttempt = null, string couponCodeError = null)
+    {
         var shoppingCart = await currentShoppingCartRetriever.Get(cancellationToken);
         if (shoppingCart == null)
         {
-            return View(new ShoppingCartViewModel(Enumerable.Empty<ShoppingCartItemViewModel>(), 0, 0, 0, 0, null, Enumerable.Empty<CouponCodeViewModel>()));
+            return ShoppingCartViewModel.Empty;
         }
 
         var shoppingCartData = shoppingCart.GetShoppingCartDataModel();
@@ -86,14 +111,17 @@ public sealed class DancingGoatShoppingCartController : Controller
 
         var calculationResult = await calculationService.CalculateShoppingCart(shoppingCartData, cancellationToken);
         var totalWithoutShippingAndTax = PriceCalculationTotalsCalculator.GetTotalWithoutShippingAndTax(calculationResult);
-        var subtotal = PriceCalculationTotalsCalculator.GetSubtotal(calculationResult);
         var subtotalAfterLineDiscount = PriceCalculationTotalsCalculator.GetSubtotalAfterLineDiscount(calculationResult);
+        var linesSubtotal = PriceCalculationTotalsCalculator.GetLinesSubtotal(calculationResult);
         var totalDiscount = PriceCalculationTotalsCalculator.GetTotalDiscountAmount(calculationResult);
+        var orderDiscount = PriceCalculationTotalsCalculator.GetOrderDiscountAmount(calculationResult);
 
+        var appliedOrderPromotionId = calculationResult.PromotionData.OrderPromotionCandidates.FirstOrDefault(c => c.Applied)?.PromotionID;
+        var orderDiscountName = await promotionRepository.GetPromotionDisplayName(appliedOrderPromotionId, cancellationToken);
         var orderDiscountText = await GetOrderDiscountInfoText(calculationResult, subtotalAfterLineDiscount, shoppingCartData, cancellationToken);
+        var freeShippingText = await GetFreeShippingInfoText(calculationResult, shoppingCartData, cancellationToken);
 
-        return View(new ShoppingCartViewModel(
-            shoppingCartData.Items.Select(item =>
+        var items = shoppingCartData.Items.Select(item =>
             {
                 var product = products.FirstOrDefault(product => (product as IContentItemFieldsSource)?.SystemFields.ContentItemID == item.ProductIdentifier.Identifier);
                 var variantValues = product == null ? null : productVariantsExtractor.ExtractVariantsValue(product);
@@ -101,7 +129,7 @@ public sealed class DancingGoatShoppingCartController : Controller
 
                 productPageUrls.TryGetValue(item.ProductIdentifier.Identifier, out var pageUrl);
 
-                return product == null
+                return ((product == null) || (calculationItem == null))
                     ? null
                     : new ShoppingCartItemViewModel(
                         item.ProductIdentifier.Identifier,
@@ -109,20 +137,29 @@ public sealed class DancingGoatShoppingCartController : Controller
                         product.ProductFieldImage.FirstOrDefault()?.ImageFile.Url,
                         pageUrl,
                         item.Quantity,
-                        calculationItem.LineSubtotalAfterLineDiscount / calculationItem.Quantity,
-                        calculationItem?.LineSubtotalAfterLineDiscount ?? product.ProductFieldPrice,
+                        calculationItem.LineSubtotalAfterLineDiscount,
                         product.ProductFieldPrice * item.Quantity,
                         calculationItem.PromotionData.CatalogPromotionCandidates.FirstOrDefault(c => c.Applied)?.PromotionCandidate as DancingGoatCatalogPromotionCandidate,
-                        item.ProductIdentifier.VariantIdentifier);
+                        item.ProductIdentifier.VariantIdentifier,
+                        calculationItem.ProductData.SKU);
             })
             .Where(x => x != null)
-            .ToList(),
+            .ToList();
+
+        return new ShoppingCartViewModel(
+            items,
+            calculationResult.GrandTotal,
+            linesSubtotal,
             totalWithoutShippingAndTax,
-            subtotal,
             calculationResult.TotalTax,
             totalDiscount,
             orderDiscountText,
-            GetCouponsViewModel(shoppingCartData.CouponCodes, calculationResult)));
+            GetCouponsViewModel(shoppingCartData.CouponCodes, calculationResult),
+            orderDiscount,
+            orderDiscountName,
+            couponCodeAttempt,
+            couponCodeError,
+            freeShippingText);
     }
 
 
@@ -141,19 +178,26 @@ public sealed class DancingGoatShoppingCartController : Controller
 
         shoppingCart.Update();
 
-        return await RedirectToShoppingCartPage(languageName, cancellationToken);
+        return await CartResponse(languageName, cancellationToken);
     }
 
 
     [HttpPost]
     [Route("/ShoppingCart/Add")]
-    public async Task<IActionResult> Add(int contentItemId, int quantity, int? variantId, string languageName, CancellationToken cancellationToken)
+    public async Task<IActionResult> Add(int contentItemId, int quantity, int? variantId, string languageName, string returnUrl, CancellationToken cancellationToken)
     {
         var shoppingCart = await GetCurrentShoppingCart(cancellationToken);
 
-        UpdateQuantity(shoppingCart, new ProductVariantIdentifier { Identifier = contentItemId, VariantIdentifier = variantId }, quantity);
+        AddQuantity(shoppingCart, new ProductVariantIdentifier { Identifier = contentItemId, VariantIdentifier = variantId }, quantity);
 
         shoppingCart.Update();
+
+        TempData[DancingGoatConstants.CART_TOAST_TEMPDATA_KEY] = localizer["Added to cart"].Value;
+
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return Redirect(returnUrl);
+        }
 
         return await RedirectToShoppingCartPage(languageName, cancellationToken);
     }
@@ -163,6 +207,9 @@ public sealed class DancingGoatShoppingCartController : Controller
     [Route("/ShoppingCart/HandleCouponCode")]
     public async Task<IActionResult> HandleCouponCode(string couponCode, string action, string languageName, CancellationToken cancellationToken)
     {
+        string couponCodeAttempt = null;
+        string couponCodeError = null;
+
         if (!string.IsNullOrWhiteSpace(couponCode))
         {
             var shoppingCart = await GetCurrentShoppingCart(cancellationToken);
@@ -171,15 +218,29 @@ public sealed class DancingGoatShoppingCartController : Controller
             // Normalize the promotion code (trim for comparison)
             var normalizedCode = couponCode.Trim();
 
+            // A rejected code leaves the cart untouched, so it must not cause a write.
+            var couponCodesChanged = false;
+
             if (string.Equals(action, ADD_COUPON_CODE, StringComparison.OrdinalIgnoreCase))
             {
                 bool codeAlreadyApplied = shoppingCartData.CouponCodes.Any(c => string.Equals(c, normalizedCode, StringComparison.OrdinalIgnoreCase));
                 bool codeExists = await promotionCouponRepository.PromotionCouponExists(normalizedCode, cancellationToken);
 
-                if (!codeAlreadyApplied && codeExists)
+                if (!codeExists)
+                {
+                    couponCodeAttempt = normalizedCode;
+                    couponCodeError = localizer["There is no promotion with the code {0}.", normalizedCode].Value;
+                }
+                else if (codeAlreadyApplied)
+                {
+                    couponCodeAttempt = normalizedCode;
+                    couponCodeError = localizer["The code {0} is already applied.", normalizedCode].Value;
+                }
+                else
                 {
                     // Add the new coupon code if it's not already present
                     shoppingCartData.CouponCodes.Add(normalizedCode);
+                    couponCodesChanged = true;
                 }
             }
             else if (string.Equals(action, REMOVE_COUPON_CODE, StringComparison.OrdinalIgnoreCase))
@@ -189,14 +250,39 @@ public sealed class DancingGoatShoppingCartController : Controller
                 if (codeToRemove != null)
                 {
                     shoppingCartData.CouponCodes.Remove(codeToRemove);
+                    couponCodesChanged = true;
                 }
             }
 
-            shoppingCart.StoreShoppingCartDataModel(shoppingCartData);
-            shoppingCart.Update();
+            if (couponCodesChanged)
+            {
+                shoppingCart.StoreShoppingCartDataModel(shoppingCartData);
+                shoppingCart.Update();
+            }
         }
 
-        return await RedirectToShoppingCartPage(languageName, cancellationToken);
+        return await CartResponse(languageName, cancellationToken, couponCodeAttempt, couponCodeError);
+    }
+
+
+    /// <summary>
+    /// Answers a cart mutation. A background update asks for the changed regions and gets them as a partial;
+    /// a plain form post gets the usual redirect, so the page keeps working without JavaScript.
+    /// </summary>
+    private async Task<IActionResult> CartResponse(string languageName, CancellationToken cancellationToken, string couponCodeAttempt = null, string couponCodeError = null)
+    {
+        if (!Request.Headers.ContainsKey(CART_UPDATE_HEADER))
+        {
+            if (couponCodeError != null)
+            {
+                TempData[COUPON_CODE_ATTEMPT_TEMPDATA_KEY] = couponCodeAttempt;
+                TempData[COUPON_CODE_ERROR_TEMPDATA_KEY] = couponCodeError;
+            }
+
+            return await RedirectToShoppingCartPage(languageName, cancellationToken);
+        }
+
+        return PartialView("_ShoppingCartRegions", await BuildShoppingCartViewModel(cancellationToken, couponCodeAttempt, couponCodeError));
     }
 
 
@@ -205,6 +291,36 @@ public sealed class DancingGoatShoppingCartController : Controller
         return variants != null && variantId != null && variants.TryGetValue(variantId.Value, out string variantValue)
             ? $"{productName} - {variantValue}"
             : productName;
+    }
+
+
+    /// <summary>
+    /// Adds the given quantity of the product to the shopping cart, increasing the quantity of an already present item.
+    /// </summary>
+    private static void AddQuantity(ShoppingCartInfo shoppingCart, ProductVariantIdentifier productIdentifier, int quantity)
+    {
+        if (quantity <= 0)
+        {
+            return;
+        }
+
+        var shoppingCartData = shoppingCart.GetShoppingCartDataModel();
+
+        var productItem = shoppingCartData.Items.FirstOrDefault(x => x.ProductIdentifier == productIdentifier);
+        if (productItem != null)
+        {
+            productItem.Quantity += quantity;
+        }
+        else
+        {
+            shoppingCartData.Items.Add(new ShoppingCartDataItem
+            {
+                ProductIdentifier = productIdentifier,
+                Quantity = quantity
+            });
+        }
+
+        shoppingCart.StoreShoppingCartDataModel(shoppingCartData);
     }
 
 
@@ -287,6 +403,14 @@ public sealed class DancingGoatShoppingCartController : Controller
                 return orderCandidate.Applied ? CouponCodeStatus.Applied : CouponCodeStatus.Applicable;
             }
 
+            var shippingCandidate = calculationResult.PromotionData.FreeShippingPromotionCandidates.FirstOrDefault(
+                c => c.CouponCode?.Equals(couponCode, StringComparison.OrdinalIgnoreCase) ?? false);
+
+            if (shippingCandidate != null)
+            {
+                return shippingCandidate.Applied ? CouponCodeStatus.Applied : CouponCodeStatus.Applicable;
+            }
+
             return CouponCodeStatus.NotApplicable;
         }
     }
@@ -310,5 +434,20 @@ public sealed class DancingGoatShoppingCartController : Controller
         }
 
         return text;
+    }
+
+
+    /// <summary>
+    /// Returns the free shipping confirmation when the cart qualifies, otherwise the upsell message toward the
+    /// closest active free shipping promotion. Returns <c>null</c> when there is nothing to tell the customer.
+    /// </summary>
+    private async Task<string> GetFreeShippingInfoText(DancingGoatPriceCalculationResult calculationResult, ShoppingCartDataModel shoppingCartData, CancellationToken cancellationToken)
+    {
+        if (calculationResult.PromotionData.FreeShippingPromotionCandidates.Any(candidate => candidate.Applied))
+        {
+            return localizer["You qualified for free shipping. Enjoy!"];
+        }
+
+        return await upsellFreeShippingService.GetUpsellFreeShippingMessage(calculationResult, shoppingCartData.CouponCodes, cancellationToken);
     }
 }

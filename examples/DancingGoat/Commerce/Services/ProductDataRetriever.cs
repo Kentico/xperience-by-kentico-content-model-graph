@@ -8,6 +8,8 @@ using CMS.ContentEngine;
 
 using DancingGoat.Models;
 
+using Kentico.Content.Web.Mvc;
+
 namespace DancingGoat.Commerce;
 
 /// <summary>
@@ -17,7 +19,7 @@ namespace DancingGoat.Commerce;
 /// This class implements <see cref="IProductDataRetriever{ProductVariantIdentifier, DancingGoatProductData}"/> for <see cref="DancingGoatProductData"/>
 /// and is responsible for:
 /// <list type="bullet">
-///   <item><description>Building and executing content queries for product identifiers.</description></item>
+///   <item><description>Retrieving products for the given product identifiers with implicit caching.</description></item>
 ///   <item><description>Mapping raw CMS content item data into <see cref="DancingGoatProductData"/> objects.</description></item>
 ///   <item><description>Returning results as a read-only dictionary keyed by product identifiers.</description></item>
 /// </list>
@@ -26,7 +28,7 @@ internal sealed class ProductDataRetriever<TProductIdentifier, TProductData> : I
     where TProductIdentifier : ProductVariantIdentifier
     where TProductData : DancingGoatProductData
 {
-    private readonly IContentQueryExecutor contentQueryExecutor;
+    private readonly IContentRetriever contentRetriever;
     private readonly ProductVariantsExtractor productVariantsExtractor;
     private readonly ProductNameProvider productNameProvider;
 
@@ -34,9 +36,9 @@ internal sealed class ProductDataRetriever<TProductIdentifier, TProductData> : I
     /// <summary>
     /// Initializes a new instance of <see cref="ProductDataRetriever{TProductIdentifier, TProductData}"/>.
     /// </summary>
-    public ProductDataRetriever(IContentQueryExecutor contentQueryExecutor, ProductVariantsExtractor productVariantsExtractor, ProductNameProvider productNameProvider)
+    public ProductDataRetriever(IContentRetriever contentRetriever, ProductVariantsExtractor productVariantsExtractor, ProductNameProvider productNameProvider)
     {
-        this.contentQueryExecutor = contentQueryExecutor;
+        this.contentRetriever = contentRetriever;
         this.productVariantsExtractor = productVariantsExtractor;
         this.productNameProvider = productNameProvider;
     }
@@ -55,28 +57,26 @@ internal sealed class ProductDataRetriever<TProductIdentifier, TProductData> : I
     /// </returns>
     public async Task<IReadOnlyDictionary<TProductIdentifier, TProductData>> Get(IEnumerable<TProductIdentifier> productIdentifiers, string languageName, CancellationToken cancellationToken)
     {
-        // Query for standalone products (without variants) or parent products of product variants
-        var productsBuilder = new ContentItemQueryBuilder()
-            .ForContentTypes(configure => configure
-                // Get the IProductFields reusable field schema representing standalone products (without variants) or the parent product of product variants
-                .OfReusableSchema(IProductFields.REUSABLE_FIELD_SCHEMA_NAME)
-                // Ensure that up to 1 level of linked items (product variants) are included for each parent product
-                .WithLinkedItems(1)
-            )
-            .InLanguage(languageName)
-            .Parameters(
-                p => p.Where(
-                    // ProductIdentifier.Identifier refers to either a standalone product or the parent of a product variant
-                    w => w.WhereIn(nameof(ContentItemFields.ContentItemID), productIdentifiers.Select(x => x.Identifier))
-                )
-            );
+        var identifiers = productIdentifiers.ToList();
 
-        // Execute the query and get the result
-        var productsResult = await contentQueryExecutor.GetMappedResult<IProductFields>(productsBuilder, cancellationToken: cancellationToken);
+        var productIds = identifiers.Select(x => x.Identifier).ToList();
+
+        var productsResult = await contentRetriever.RetrieveContentOfReusableSchemas<IProductFields>(
+            [IProductFields.REUSABLE_FIELD_SCHEMA_NAME],
+            new RetrieveContentOfReusableSchemasParameters
+            {
+                LinkedItemsMaxLevel = 1,
+                LanguageName = languageName,
+                WorkspaceNames = [DancingGoatConstants.COMMERCE_WORKSPACE_NAME]
+            },
+            query => query.Where(where => where.WhereIn(nameof(IContentQueryDataContainer.ContentItemID), productIds)),
+            new RetrievalCacheSettings($"WhereIn_{nameof(IContentQueryDataContainer.ContentItemID)}_{string.Join("_", productIds)}"),
+            cancellationToken
+        );
 
         var resultDictionary = new Dictionary<TProductIdentifier, TProductData>();
 
-        foreach (var productIdentifier in productIdentifiers)
+        foreach (var productIdentifier in identifiers)
         {
             // Retrieve the standalone product or the parent product of a product variant
             var product = productsResult.FirstOrDefault(p => (p as IContentItemFieldsSource).SystemFields.ContentItemID == productIdentifier.Identifier);

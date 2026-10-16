@@ -3,7 +3,9 @@
 @model CheckoutViewModel
 
 @{
-    ViewData["PageClass"] = "inverted";
+    ViewBag.Title = Model.Step == CheckoutStep.OrderConfirmation
+        ? HtmlLocalizer["Order confirmation"].Value
+        : HtmlLocalizer["Customer details"].Value;
 }
 
 @if (Model.Step == CheckoutStep.CheckoutCustomer)
@@ -13,4 +15,12 @@
 else if (Model.Step == CheckoutStep.OrderConfirmation)
 {
     <partial name="_OrderConfirmation" model="Model" />
+}
+
+@section scripts {
+    @if (Model.Step == CheckoutStep.CheckoutCustomer)
+    {
+        <script src="~/Scripts/checkoutSummary.js" defer></script>
+        <script src="~/Scripts/checkoutAddress.js" defer></script>
+    }
 }

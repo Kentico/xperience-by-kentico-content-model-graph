@@ -117,6 +117,18 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="dancinggoat.articleswidget.articlessection.label" xml:space="preserve">
+    <value>Articles section</value>
+  </data>
+  <data name="dancinggoat.articleswidget.description" xml:space="preserve">
+    <value>Displays the latest articles from a selected articles section.</value>
+  </data>
+  <data name="dancinggoat.articleswidget.selectarticlessection" xml:space="preserve">
+    <value>Please select an articles section in the widget properties.</value>
+  </data>
+  <data name="dancinggoat.articleswidget.title" xml:space="preserve">
+    <value>Articles</value>
+  </data>
   <data name="dancinggoat.articletemplate.description" xml:space="preserve">
     <value>Displays an article detail with related articles underneath.</value>
   </data>
@@ -186,11 +198,32 @@
   <data name="dancinggoat.buttonwidget.title" xml:space="preserve">
     <value>Button</value>
   </data>
+  <data name="dancinggoat.cafecardswidget.cafescount.label" xml:space="preserve">
+    <value>Number of cafes</value>
+  </data>
+  <data name="dancinggoat.cafecardswidget.cafesfolder.label" xml:space="preserve">
+    <value>Cafes smart folder</value>
+  </data>
+  <data name="dancinggoat.cafecardswidget.description" xml:space="preserve">
+    <value>Displays cafe cards from a selected smart folder.</value>
+  </data>
+  <data name="dancinggoat.cafecardswidget.heading.label" xml:space="preserve">
+    <value>Heading</value>
+  </data>
+  <data name="dancinggoat.cafecardswidget.selectfolder" xml:space="preserve">
+    <value>Please select a smart folder with cafes in the widget properties.</value>
+  </data>
+  <data name="dancinggoat.cafecardswidget.title" xml:space="preserve">
+    <value>Cafe cards</value>
+  </data>
   <data name="dancinggoat.cardwidget.description" xml:space="preserve">
     <value>Displays an image with a centered text.</value>
   </data>
   <data name="dancinggoat.cardwidget.image.label" xml:space="preserve">
     <value>Image</value>
+  </data>
+  <data name="dancinggoat.cardwidget.text.label" xml:space="preserve">
+    <value>Text</value>
   </data>
   <data name="dancinggoat.cardwidget.title" xml:space="preserve">
     <value>Card</value>
@@ -237,6 +270,24 @@
   <data name="dancinggoat.emailbuildertemplate.title" xml:space="preserve">
     <value>Dancing Goat Regular Template (Email Builder)</value>
   </data>
+  <data name="dancinggoat.eventswidget.description" xml:space="preserve">
+    <value>Displays selected events in a slider.</value>
+  </data>
+  <data name="dancinggoat.eventswidget.heading.label" xml:space="preserve">
+    <value>Heading</value>
+  </data>
+  <data name="dancinggoat.eventswidget.noevents" xml:space="preserve">
+    <value>Please select events in the widget properties.</value>
+  </data>
+  <data name="dancinggoat.eventswidget.selectedevents.label" xml:space="preserve">
+    <value>Events</value>
+  </data>
+  <data name="dancinggoat.eventswidget.showonlyupcoming.label" xml:space="preserve">
+    <value>Show only upcoming events</value>
+  </data>
+  <data name="dancinggoat.eventswidget.title" xml:space="preserve">
+    <value>Events</value>
+  </data>
   <data name="dancinggoat.formvalidationrule.productlinkedonce.description" xml:space="preserve">
     <value>Checks whether product is already linked once.</value>
   </data>
@@ -249,11 +300,41 @@
   <data name="dancinggoat.formvalidationrule.uniquesku.name" xml:space="preserve">
     <value>Unique SKU value</value>
   </data>
+  <data name="dancinggoat.freeshippingpromotionrule.productcategories.label" xml:space="preserve">
+    <value>Product categories</value>
+  </data>
+  <data name="dancinggoat.freeshippingpromotionrule.products.label" xml:space="preserve">
+    <value>Products</value>
+  </data>
+  <data name="dancinggoat.freeshippingpromotionrule.producttags.label" xml:space="preserve">
+    <value>Product tags</value>
+  </data>
+  <data name="dancinggoat.freeshippingpromotionrule.sample.name" xml:space="preserve">
+    <value>Sample free shipping promotion rule</value>
+  </data>
+  <data name="dancinggoat.freeshippingpromotionrule.scope.label" xml:space="preserve">
+    <value>Scope</value>
+  </data>
+  <data name="dancinggoat.freeshippingpromotionrule.scope.options.anyproduct" xml:space="preserve">
+    <value>Any product</value>
+  </data>
+  <data name="dancinggoat.freeshippingpromotionrule.scope.options.categories" xml:space="preserve">
+    <value>Categories</value>
+  </data>
+  <data name="dancinggoat.freeshippingpromotionrule.scope.options.products" xml:space="preserve">
+    <value>Specific products</value>
+  </data>
+  <data name="dancinggoat.freeshippingpromotionrule.scope.options.tags" xml:space="preserve">
+    <value>Tags</value>
+  </data>
   <data name="dancinggoat.fullwidthemailsection.title" xml:space="preserve">
     <value>Full-width section</value>
   </data>
   <data name="dancinggoat.heroimagewidget.buttontarget.label" xml:space="preserve">
     <value>Button target</value>
+  </data>
+  <data name="dancinggoat.heroimagewidget.buttontext.label" xml:space="preserve">
+    <value>Button text</value>
   </data>
   <data name="dancinggoat.heroimagewidget.description" xml:space="preserve">
     <value>Displays an image, text, and a CTA button.</value>
@@ -261,17 +342,26 @@
   <data name="dancinggoat.heroimagewidget.image.label" xml:space="preserve">
     <value>Image</value>
   </data>
-  <data name="dancinggoat.heroimagewidget.theme.label" xml:space="preserve">
-    <value>Color scheme</value>
+  <data name="dancinggoat.heroimagewidget.secondarybuttontarget.label" xml:space="preserve">
+    <value>Secondary button target</value>
   </data>
-  <data name="dancinggoat.heroimagewidget.theme.option.dark" xml:space="preserve">
-    <value>Dark</value>
+  <data name="dancinggoat.heroimagewidget.secondarybuttontext.label" xml:space="preserve">
+    <value>Secondary button text</value>
   </data>
-  <data name="dancinggoat.heroimagewidget.theme.option.light" xml:space="preserve">
-    <value>Light</value>
+  <data name="dancinggoat.heroimagewidget.subtext.label" xml:space="preserve">
+    <value>Supporting text</value>
+  </data>
+  <data name="dancinggoat.heroimagewidget.text.label" xml:space="preserve">
+    <value>Text</value>
   </data>
   <data name="dancinggoat.heroimagewidget.title" xml:space="preserve">
     <value>Hero image</value>
+  </data>
+  <data name="dancinggoat.homepagetemplate.description" xml:space="preserve">
+    <value>Home page template with a single editable area.</value>
+  </data>
+  <data name="dancinggoat.homepagetemplate.title" xml:space="preserve">
+    <value>Home page</value>
   </data>
   <data name="dancinggoat.imagewidget.alignment.explanationtext" xml:space="preserve">
     <value>Select how you want to position the image</value>
@@ -336,8 +426,23 @@
   <data name="dancinggoat.landingpagesinglecolumn.headercolor.option.gold" xml:space="preserve">
     <value>Gold</value>
   </data>
+  <data name="dancinggoat.landingpagesinglecolumn.heroimage.label" xml:space="preserve">
+    <value>Hero background image</value>
+  </data>
   <data name="dancinggoat.landingpagesinglecolumn.showlogo.label" xml:space="preserve">
     <value>Display logo</value>
+  </data>
+  <data name="dancinggoat.landingpagesinglecolumn.ticketlabel.label" xml:space="preserve">
+    <value>Ticket label</value>
+  </data>
+  <data name="dancinggoat.landingpagesinglecolumn.ticketnote.label" xml:space="preserve">
+    <value>Ticket fine print (separate items with "·")</value>
+  </data>
+  <data name="dancinggoat.landingpagesinglecolumn.ticketvalue.label" xml:space="preserve">
+    <value>Ticket value</value>
+  </data>
+  <data name="dancinggoat.landingpagesinglecolumn.ticketwhen.label" xml:space="preserve">
+    <value>Ticket schedule</value>
   </data>
   <data name="dancinggoat.landingpagesinglecolumntemplate.description" xml:space="preserve">
     <value>A default single column page template with two sections differentiated by a background color.</value>
@@ -378,8 +483,32 @@
   <data name="dancinggoat.singlecolumnsection.title" xml:space="preserve">
     <value>1 column</value>
   </data>
+  <data name="dancinggoat.storysectionwidget.description" xml:space="preserve">
+    <value>Displays a story section from the Content hub.</value>
+  </data>
+  <data name="dancinggoat.storysectionwidget.selectstorysection" xml:space="preserve">
+    <value>Please select a story section in the widget properties.</value>
+  </data>
+  <data name="dancinggoat.storysectionwidget.storysection.label" xml:space="preserve">
+    <value>Story section</value>
+  </data>
+  <data name="dancinggoat.storysectionwidget.title" xml:space="preserve">
+    <value>Story section</value>
+  </data>
   <data name="dancinggoat.testimonialwidget.description" xml:space="preserve">
     <value>Displays a quotation with its author.</value>
+  </data>
+  <data name="dancinggoat.testimonialwidget.heading.label" xml:space="preserve">
+    <value>Heading</value>
+  </data>
+  <data name="dancinggoat.testimonialwidget.image.label" xml:space="preserve">
+    <value>Author photo</value>
+  </data>
+  <data name="dancinggoat.testimonialwidget.selecttestimonial" xml:space="preserve">
+    <value>Please select a testimonial in the widget properties.</value>
+  </data>
+  <data name="dancinggoat.testimonialwidget.testimonial.label" xml:space="preserve">
+    <value>Testimonial</value>
   </data>
   <data name="dancinggoat.testimonialwidget.title" xml:space="preserve">
     <value>Testimonial</value>
@@ -431,5 +560,8 @@
   </data>
   <data name="dancinggoat.twocolumnsection.title" xml:space="preserve">
     <value>2 columns - 50/50</value>
+  </data>
+  <data name="dancinggoat.widget.heading.explanation" xml:space="preserve">
+    <value>Leave empty to use the default heading.</value>
   </data>
 </root>

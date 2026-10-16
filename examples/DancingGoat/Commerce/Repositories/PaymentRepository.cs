@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,11 +12,8 @@ namespace DancingGoat.Commerce;
 /// <summary>
 /// Repository for managing payment method information retrieval operations.
 /// </summary>
-public class PaymentRepository
+public sealed class PaymentRepository : CachedRepositoryBase
 {
-    private readonly IWebsiteChannelContext websiteChannelContext;
-    private readonly IProgressiveCache cache;
-    private readonly ICacheDependencyBuilderFactory cacheDependencyBuilderFactory;
     private readonly IInfoProvider<PaymentMethodInfo> paymentMethodInfoProvider;
 
 
@@ -30,10 +26,8 @@ public class PaymentRepository
     /// <param name="paymentMethodInfoProvider">The payment method info provider.</param>
     public PaymentRepository(IWebsiteChannelContext websiteChannelContext, IProgressiveCache cache, ICacheDependencyBuilderFactory cacheDependencyBuilderFactory,
                              IInfoProvider<PaymentMethodInfo> paymentMethodInfoProvider)
+        : base(websiteChannelContext, cache, cacheDependencyBuilderFactory)
     {
-        this.websiteChannelContext = websiteChannelContext;
-        this.cache = cache;
-        this.cacheDependencyBuilderFactory = cacheDependencyBuilderFactory;
         this.paymentMethodInfoProvider = paymentMethodInfoProvider;
     }
 
@@ -43,29 +37,7 @@ public class PaymentRepository
     /// </summary>
     public async Task<IEnumerable<PaymentMethodInfo>> GetPayments(CancellationToken cancellationToken)
     {
-        if (websiteChannelContext.IsPreview)
-        {
-            return await GetPaymentInternal(cancellationToken);
-        }
-
-        var cacheSettings = new CacheSettings(5, websiteChannelContext.WebsiteChannelName, nameof(PaymentRepository), nameof(GetPayments));
-
-        return await cache.LoadAsync(async (cacheSettings) =>
-        {
-            var result = await GetPaymentInternal(cancellationToken);
-
-            if (cacheSettings.Cached = result != null && result.Any())
-            {
-                var cacheDependencyBuilder = cacheDependencyBuilderFactory.Create();
-                var cacheDependencies = cacheDependencyBuilder
-                                        .ForInfoObjects<PaymentMethodInfo>()
-                                        .All()
-                                        .Builder()
-                                        .Build();
-                cacheSettings.CacheDependency = cacheDependencies;
-            }
-            return result;
-        }, cacheSettings);
+        return await GetCached(GetPaymentInternal, [nameof(PaymentRepository), nameof(GetPayments)], cancellationToken);
     }
 
 

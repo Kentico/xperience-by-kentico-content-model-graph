@@ -3,6 +3,9 @@
 [![Kentico Labs](https://img.shields.io/badge/Kentico_Labs-grey?labelColor=orange)](https://github.com/Kentico)
 [![CI](https://github.com/Kentico/xperience-by-kentico-content-model-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/Kentico/xperience-by-kentico-content-model-graph/actions/workflows/ci.yml)
 
+> [!NOTE]
+> This package replaces the old `Kentico.Xperience.ContentModelGraph` package (final version 1.1.0). To migrate, swap the package reference for `Kentico.Xperience.Labs.ContentModelGraph.Admin` and update `using Kentico.Xperience.ContentModelGraph` to `using Kentico.Xperience.Labs.ContentModelGraph.Admin`.
+
 ## Description
 
 Content Model Graph adds an interactive application to the Xperience by Kentico administration. It visualizes relationships among:
@@ -52,22 +55,19 @@ Watch and see how you can use this library to explore the entire data model of y
 
 ## Requirements
 
-| Xperience version | Library version    |
-| ----------------- | ------------------ |
-| >= 31.7.3         | 2.0.0              |
+| Xperience version | Library version                                         |
+| ----------------- | ------------------------------------------------------- |
+| >= 31.9.2         | 2.0.0                                                   |
+| >= 31.7.3         | 1.0.0 - 1.1.0 (final release under the old package ID) |
 
 - .NET 10.0 or newer
-- Xperience by Kentico 31.7.3 or newer
+- Xperience by Kentico 31.9.2 or newer
 
 ## Package Installation
 
 ```powershell
 dotnet add package Kentico.Xperience.Labs.ContentModelGraph.Admin --version 2.0.0
 ```
-
-## Migrating from `Kentico.Xperience.ContentModelGraph`
-
-Version 1.1.0 was the final release under the old package ID. Replace the package reference with `Kentico.Xperience.Labs.ContentModelGraph.Admin` 2.0.0 and update `using Kentico.Xperience.ContentModelGraph;` to `using Kentico.Xperience.Labs.ContentModelGraph.Admin;`. 2.0.0 is functionally equal to 1.1.0.
 
 ## Quick Start
 

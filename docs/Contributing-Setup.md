@@ -38,18 +38,18 @@ Open the administration at the URL configured in `examples/DancingGoat/Propertie
 
 | Server                 | Transport | Source                                                                                                            |
 | ---------------------- | --------- | ----------------------------------------------------------------------------------------------------------------- |
-| `kentico-docs`         | HTTP      | [Documentation MCP server](https://docs.kentico.com/documentation/developers-and-admins/installation/mcp-server)     |
-| `xperience-management` | stdio     | [`@kentico/management-api-mcp`](https://www.npmjs.com/package/@kentico/management-api-mcp) (requires Node.js 22 or newer) |
+| `kentico-docs-mcp`     | HTTP      | [Documentation MCP server](https://docs.kentico.com/documentation/developers-and-admins/installation/mcp-server)     |
+| `xperience-management-mcp` | stdio | [`@kentico/management-api-mcp`](https://www.npmjs.com/package/@kentico/management-api-mcp) (requires Node.js 22 or newer) |
 
-`kentico-docs` needs no configuration. If the same server is already registered at the user or CLI level, remove one of the registrations; duplicate instances double token usage.
+`kentico-docs-mcp` needs no configuration. If the same server is already registered at the user or CLI level, remove one of the registrations; duplicate instances double token usage.
 
-`xperience-management` connects to the management API of a locally running Xperience application. The configured URL matches the DancingGoat port in `examples/DancingGoat/Properties/launchSettings.json`. Change it in `.mcp.json` if the example runs elsewhere.
+`xperience-management-mcp` connects to the management API of a locally running Xperience application. The configured URL matches the Dancing Goat port in `examples/DancingGoat/appsettings.Development.json`. Change it in `.mcp.json` if the example runs elsewhere.
 
-The management API is wired up in `examples/DancingGoat/Program.cs` per [Configure the Management MCP server](https://docs.kentico.com/documentation/developers-and-admins/api/management-api/configure-management-mcp-server): the `Kentico.Xperience.ManagementApi` package, `AddKenticoManagementApi()`, and `UseKenticoManagementApi()` between `UseAuthentication()` and `UseKentico()`.
+The management API is configured by `examples/DancingGoat/ManagementApiConfiguration.cs` per [Configure the Management MCP server](https://docs.kentico.com/documentation/developers-and-admins/api/management-api/configure-management-mcp-server): it registers `AddKenticoManagementApi()` and `UseKenticoManagementApi()` only for local development.
 
-Both sides share a throwaway secret committed to the repository: `XPERIENCE_MANAGEMENT_API_SECRET` in `examples/DancingGoat/appsettings.Development.json`, and `MANAGEMENT_API_SECRET` in `.mcp.json`. This is deliberate — the example app holds no data worth protecting and the API is reachable only from localhost. **Change both values if you ever expose the app beyond your machine**, and never use this pattern in a real project.
+Both sides share a throwaway secret committed to the repository: `ManagementApi:Secret` in `examples/DancingGoat/appsettings.Development.json`, and `MANAGEMENT_API_SECRET` in `.mcp.json`. This is deliberate — the example app holds no data worth protecting and the API is reachable only from localhost. **Change both values if you ever expose the app beyond your machine**, and never use this pattern in a real project.
 
-DancingGoat enables the API only when the environment is Development **and** the secret holds at least 32 characters; otherwise the app starts as usual and the endpoints do not exist. Never enable it outside local development.
+Dancing Goat enables the API only when the environment is Development and `ManagementApi:Port` is configured; otherwise the app starts as usual and the endpoints do not exist. Never enable it outside local development.
 
 Run the app, then point your agent at it:
 
@@ -57,9 +57,7 @@ Run the app, then point your agent at it:
 dotnet watch run --project .\examples\DancingGoat\DancingGoat.csproj
 ```
 
-Verify by requesting `http://localhost:19794/kentico-api/management/v1/openapi.json` while the app runs; a 404 means the secret is missing or too short. The two values must match, so change them together.
-
-The npm package is pinned to `@kentico/management-api-mcp@31.7.3-preview` to match the Xperience version in `Directory.Packages.props`. `Kentico.Xperience.ManagementApi` has no stable 31.7.3 release, so the NuGet pin is `31.7.3-preview` as well; it depends on `Kentico.Xperience.Admin` 31.7.3. Update both pins together with the rest of the Xperience packages.
+Verify by requesting `http://localhost:6893/kentico-api/management/v1/openapi.json` while the app runs; a 404 means the API is not enabled. The two secrets must match, so change them together. The Management MCP package uses the version specified by the generated template configuration; Xperience NuGet and admin npm dependencies are pinned to 31.9.2.
 
 ## Formatting
 

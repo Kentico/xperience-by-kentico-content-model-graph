@@ -4,11 +4,9 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-using CMS.Websites;
-
 using DancingGoat.Models;
+using DancingGoat.Services;
 
-using Kentico.Content.Web.Mvc;
 using Kentico.Membership;
 
 using Microsoft.AspNetCore.Authorization;
@@ -25,7 +23,7 @@ namespace DancingGoat.Controllers
     {
         private readonly IStringLocalizer<SharedResources> localizer;
         private readonly ILogger<AccountController> logger;
-        private readonly IContentRetriever contentRetriever;
+        private readonly WebPageUrlProvider webPageUrlProvider;
         private readonly UserManager<ApplicationUser> userManager;
         private readonly SignInManager<ApplicationUser> signInManager;
 
@@ -35,13 +33,13 @@ namespace DancingGoat.Controllers
             SignInManager<ApplicationUser> signInManager,
             IStringLocalizer<SharedResources> localizer,
             ILogger<AccountController> logger,
-            IContentRetriever contentRetriever)
+            WebPageUrlProvider webPageUrlProvider)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.localizer = localizer;
             this.logger = logger;
-            this.contentRetriever = contentRetriever;
+            this.webPageUrlProvider = webPageUrlProvider;
         }
 
 
@@ -161,14 +159,7 @@ namespace DancingGoat.Controllers
 
         private async Task<string> GetHomeWebPageUrl(CancellationToken cancellationToken = default)
         {
-            var homePage = (await contentRetriever.RetrievePages<HomePage>(
-                RetrievePagesParameters.Default,
-                query => query.UrlPathColumns(),
-                new RetrievalCacheSettings("UrlPathColumns"),
-                cancellationToken
-            )).FirstOrDefault();
-
-            return homePage.GetUrl().RelativePath;
+            return await webPageUrlProvider.HomePageUrl(cancellationToken: cancellationToken);
         }
     }
 }

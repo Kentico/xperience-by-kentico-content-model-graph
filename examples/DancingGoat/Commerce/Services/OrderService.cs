@@ -18,15 +18,18 @@ public sealed class OrderService
     private readonly IInfoProvider<ShippingMethodInfo> shippingMethodInfoProvider;
     private readonly IOrderCreationService<OrderData, DancingGoatPriceCalculationRequest, DancingGoatPriceCalculationResult, AddressDto> orderCreationService;
     private readonly OrderNumberGenerator orderNumberGenerator;
+    private readonly CalculationService calculationService;
 
     public OrderService(
         IInfoProvider<ShippingMethodInfo> shippingMethodInfoProvider,
         IOrderCreationService<OrderData, DancingGoatPriceCalculationRequest, DancingGoatPriceCalculationResult, AddressDto> orderCreationService,
-        OrderNumberGenerator orderNumberGenerator)
+        OrderNumberGenerator orderNumberGenerator,
+        CalculationService calculationService)
     {
         this.shippingMethodInfoProvider = shippingMethodInfoProvider;
         this.orderCreationService = orderCreationService;
         this.orderNumberGenerator = orderNumberGenerator;
+        this.calculationService = calculationService;
     }
 
 
@@ -43,7 +46,11 @@ public sealed class OrderService
         {
             throw new InvalidOperationException("Invalid shipping method.");
         }
-        if (expectedShippingPrice < shipping.ShippingMethodPrice)
+
+        // A shipping promotion can reduce the shipping method's price to zero. Comparing the expected price
+        // against the raw shipping method price would reject checkout for a cart that qualifies for the promotion.
+        var calculationResult = await calculationService.Calculate(shoppingCartData, PriceCalculationMode.Checkout, shippingMethodId, paymentMethodId, billingAddress, cancellationToken);
+        if (expectedShippingPrice < calculationResult.ShippingPrice)
         {
             throw new InvalidOperationException("Different shipping price than expected by the customer.");
         }
