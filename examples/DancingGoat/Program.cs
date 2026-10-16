@@ -87,8 +87,8 @@ if (builder.Environment.IsDevelopment())
 // The management API backs the "xperience-management" MCP server defined in .mcp.json.
 // It is enabled only when XPERIENCE_MANAGEMENT_API_SECRET is set, so the app runs normally without it.
 // Never enable the management API outside of local development.
-string? managementApiSecret = builder.Configuration["XPERIENCE_MANAGEMENT_API_SECRET"];
-bool managementApiEnabled = builder.Environment.IsDevelopment() && managementApiSecret?.Length >= 32;
+string managementApiSecret = builder.Configuration["XPERIENCE_MANAGEMENT_API_SECRET"];
+bool managementApiEnabled = builder.Environment.IsDevelopment() && managementApiSecret.Length >= 32;
 
 if (managementApiEnabled)
 {
