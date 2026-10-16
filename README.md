@@ -2,6 +2,7 @@
 
 [![Kentico Labs](https://img.shields.io/badge/Kentico_Labs-grey?labelColor=orange)](https://github.com/Kentico)
 [![CI](https://github.com/Kentico/xperience-by-kentico-content-model-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/Kentico/xperience-by-kentico-content-model-graph/actions/workflows/ci.yml)
+[![NuGet Package](https://img.shields.io/nuget/vpre/Kentico.Xperience.Labs.ContentModelGraph.Admin.svg)](https://www.nuget.org/packages/Kentico.Xperience.Labs.ContentModelGraph.Admin)
 
 > [!NOTE]
 > This package replaces the old `Kentico.Xperience.ContentModelGraph` package (final version 1.1.0). To migrate, swap the package reference for `Kentico.Xperience.Labs.ContentModelGraph.Admin` and update `using Kentico.Xperience.ContentModelGraph` to `using Kentico.Xperience.Labs.ContentModelGraph.Admin`.
