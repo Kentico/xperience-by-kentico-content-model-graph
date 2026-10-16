@@ -28,6 +28,21 @@ public sealed class PriceCalculationTotalsCalculator
 
 
     /// <summary>
+    /// Gets the sum of the line totals after line discounts, shown as the "Subtotal" summary row.
+    /// </summary>
+    /// <remarks>
+    /// Sums the same rounded per-line figures the cart lines display, unlike
+    /// <see cref="GetSubtotalAfterLineDiscount"/>, which subtracts an unrounded discount from the
+    /// undiscounted subtotal and can therefore disagree with the lines by a cent.
+    /// </remarks>
+    /// <param name="calculationResult">The calculation result.</param>
+    public static decimal GetLinesSubtotal(DancingGoatPriceCalculationResult calculationResult)
+    {
+        return calculationResult.Items.Sum(x => x.LineSubtotalAfterLineDiscount);
+    }
+
+
+    /// <summary>
     /// Gets the total discount amount from the calculation result.
     /// </summary>
     /// <param name="calculationResult">The calculation result.</param>

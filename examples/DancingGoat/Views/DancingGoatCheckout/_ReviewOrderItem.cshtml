@@ -1,0 +1,15 @@
+@using DancingGoat.Models
+
+@model ShoppingCartItemViewModel
+
+<div class="review-item">
+    <a class="review-thumb" href="@Model.DetailUrl" tabindex="-1" aria-hidden="true">
+        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+        {
+            <img src="@Url.Content(Model.ImageUrl)" alt="@Model.Name" title="@Model.Name" loading="lazy" />
+        }
+    </a>
+    <div class="review-item-name">@Model.Name</div>
+    <div class="review-item-qty">@HtmlLocalizer["Quantity:"] @Model.Quantity</div>
+    <div class="review-item-price"><price>@Model.TotalPrice</price></div>
+</div>

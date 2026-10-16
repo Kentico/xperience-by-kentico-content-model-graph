@@ -1,0 +1,33 @@
+﻿@using DancingGoat.Helpers
+
+@model DancingGoat.Widgets.StorySectionWidgetViewModel
+
+@inject Kentico.Builder.Web.Mvc.IAdminBuildersLocalizationService localizationService
+
+@if (Model == null)
+{
+    @if (Context.Kentico().PageBuilder().EditMode)
+    {
+        <h3 class="grid-empty">
+            @localizationService.LocalizeString("{$dancinggoat.storysectionwidget.selectstorysection$}")
+        </h3>
+    }
+}
+else
+{
+    <section class="block">
+        <div class="wrap">
+            <div class="section-head reveal">
+                <div>
+                    <h2 class="display">@HeadingFormatter.Format(Model.Title)</h2>
+                </div>
+            </div>
+            <div class="story-band reveal">
+                <div class="grain"></div>
+                <div class="story-inner">
+                    <p class="display">@Model.Text</p>
+                </div>
+            </div>
+        </div>
+    </section>
+}

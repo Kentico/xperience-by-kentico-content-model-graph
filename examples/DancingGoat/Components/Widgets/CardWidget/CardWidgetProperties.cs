@@ -22,6 +22,7 @@ namespace DancingGoat.Widgets
         /// <summary>
         /// Text to be displayed.
         /// </summary>
+        [TextInputComponent(Label = "{$dancinggoat.cardwidget.text.label$}", Order = 2)]
         public string Text { get; set; }
     }
 }

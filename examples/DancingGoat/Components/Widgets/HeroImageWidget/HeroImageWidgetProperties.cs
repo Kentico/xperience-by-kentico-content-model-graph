@@ -23,30 +23,46 @@ namespace DancingGoat.Widgets
         /// <summary>
         /// Text to be displayed.
         /// </summary>
+        [TextInputComponent(Label = "{$dancinggoat.heroimagewidget.text.label$}", Order = 2)]
         public string Text { get; set; }
+
+
+        /// <summary>
+        /// Supporting text displayed under the heading.
+        /// </summary>
+        [TextAreaComponent(Label = "{$dancinggoat.heroimagewidget.subtext.label$}", Order = 3)]
+        public string Subtext { get; set; }
 
 
         /// <summary>
         /// Button text.
         /// </summary>
+        [TextInputComponent(Label = "{$dancinggoat.heroimagewidget.buttontext.label$}", Order = 4)]
         public string ButtonText { get; set; }
 
 
         /// <summary>
         /// Target of button link.
         /// </summary>
-        [TextInputComponent(Label = "{$dancinggoat.heroimagewidget.buttontarget.label$}", Order = 2)]
+        [TextInputComponent(Label = "{$dancinggoat.heroimagewidget.buttontarget.label$}", Order = 5)]
         [UrlValidationRule(AllowRelativeUrl = true, AllowFragmentUrl = true)]
         [ExcludeFromAiraTranslation]
         public string ButtonTarget { get; set; }
 
 
         /// <summary>
-        /// Theme of the widget.
+        /// Secondary (ghost) button text.
         /// </summary>
-        [DropDownComponent(Label = "{$dancinggoat.heroimagewidget.theme.label$}", Order = 3,
-            Options = "light;{$dancinggoat.heroimagewidget.theme.option.light$}\ndark;{$dancinggoat.heroimagewidget.theme.option.dark$}")]
+        [TextInputComponent(Label = "{$dancinggoat.heroimagewidget.secondarybuttontext.label$}", Order = 6)]
+        public string SecondaryButtonText { get; set; }
+
+
+        /// <summary>
+        /// Target of the secondary button link.
+        /// </summary>
+        [TextInputComponent(Label = "{$dancinggoat.heroimagewidget.secondarybuttontarget.label$}", Order = 7)]
+        [UrlValidationRule(AllowRelativeUrl = true, AllowFragmentUrl = true)]
         [ExcludeFromAiraTranslation]
-        public string Theme { get; set; } = "dark";
+        public string SecondaryButtonTarget { get; set; }
     }
 }

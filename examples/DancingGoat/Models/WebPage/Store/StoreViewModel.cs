@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -26,7 +26,9 @@ namespace DancingGoat.Models
         /// <param name="productTagsTaxonomy">"Product tags" taxonomy data</param>
         /// <param name="languageName">Language name to map.</param>
         /// <param name="categoryMenuViewModel">Category menu view model to map.</param>
-        public static StoreViewModel GetViewModel(Store store, IEnumerable<IProductFields> products, IEnumerable<DancingGoatPriceCalculationResultItem> calculationResultItems, IDictionary<int, string> productPageUrls, IEnumerable<string> productSectionTagNames, TaxonomyData productTagsTaxonomy, string languageName, IEnumerable<NavigationItemViewModel> categoryMenuViewModel)
+        /// <param name="productIdsWithVariants">Content item identifiers of products that have variants.</param>
+        /// <param name="freeShippingProductIds">Content item identifiers of products that alone qualify for free shipping.</param>
+        public static StoreViewModel GetViewModel(Store store, IEnumerable<IProductFields> products, IEnumerable<DancingGoatPriceCalculationResultItem> calculationResultItems, IDictionary<int, string> productPageUrls, IEnumerable<string> productSectionTagNames, TaxonomyData productTagsTaxonomy, string languageName, IEnumerable<NavigationItemViewModel> categoryMenuViewModel, ISet<int> productIdsWithVariants, ISet<int> freeShippingProductIds)
         {
             var productSections = new List<ProductSectionListViewModel>();
 
@@ -46,14 +48,13 @@ namespace DancingGoat.Models
                             productPageUrls.TryGetValue((product as IContentItemFieldsSource).SystemFields.ContentItemID, out var pageUrl);
                             var productCalculationItem = calculationResultItems.FirstOrDefault(item => item.ProductIdentifier.Identifier == (product as IContentItemFieldsSource).SystemFields.ContentItemID);
 
-                            return new ProductListItemViewModel(
-                                product.ProductFieldName,
-                                product.ProductFieldImage.FirstOrDefault()?.ImageFile.Url,
+                            return ProductListItemViewModel.GetViewModel(
+                                product,
+                                productCalculationItem,
                                 pageUrl,
-                                productCalculationItem?.LineSubtotalAfterLineDiscount ?? product.ProductFieldPrice,
-                                product.ProductFieldPrice,
-                                productCalculationItem?.PromotionData.CatalogPromotionCandidates.FirstOrDefault(c => c.Applied)?.PromotionCandidate as DancingGoatCatalogPromotionCandidate,
-                                null);
+                                ProductListItemTagViewModel.GetViewModel(productSectionTag.Title),
+                                productIdsWithVariants.Contains((product as IContentItemFieldsSource).SystemFields.ContentItemID),
+                                freeShippingProductIds.Contains((product as IContentItemFieldsSource).SystemFields.ContentItemID));
                         })
                 ));
             }

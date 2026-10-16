@@ -49,6 +49,10 @@ namespace DancingGoat.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
+            // Read unconditionally: the indexer is what consumes the key, so a value left behind by a
+            // branch that never renders the confirmation would surface it on an unrelated later page.
+            var justAgreed = TempData[DancingGoatConstants.CONSENT_AGREED_TEMPDATA_KEY] is true;
+
             var consent = consentInfoProvider.Get(TrackingConsentGenerator.CONSENT_NAME);
 
             if (consent != null)
@@ -66,6 +70,13 @@ namespace DancingGoat.ViewComponents
                 var contact = ContactManagementContext.CurrentContact;
                 if ((contact != null) && consentAgreementService.IsAgreed(contact, consent))
                 {
+                    // The confirmation belongs to the request the visitor lands on after agreeing. On every
+                    // later page there is nothing left to say, so the bar is not rendered at all.
+                    if (!justAgreed)
+                    {
+                        return Content(string.Empty);
+                    }
+
                     consentModel.IsConsentAgreed = true;
                     consentModel.PrivacyPageUrl = Url.Content((await urlRetriever.Retrieve(PrivacyPageConstants.PRIVACY_PAGE_TREE_PATH, websiteChannelContext.WebsiteChannelName, currentLanguage, cancellationToken: HttpContext.RequestAborted)).RelativePath);
                 }

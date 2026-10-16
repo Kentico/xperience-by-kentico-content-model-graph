@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,6 +47,56 @@ public class ProductRepository
             },
             query => query.Where(where => where.WhereIn(nameof(IContentQueryDataContainer.ContentItemID), productIds)),
             new RetrievalCacheSettings($"WhereIn_{nameof(IContentQueryDataContainer.ContentItemID)}_{string.Join("_", productIds)}"),
+            cancellationToken
+        );
+
+        return products;
+    }
+
+
+    /// <summary>
+    /// Retrieves products by their content item GUIDs.
+    /// </summary>
+    /// <param name="productGuids">The collection of product content item GUIDs to retrieve.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    public async Task<IEnumerable<IProductFields>> GetProductsByGuids(IEnumerable<Guid> productGuids, CancellationToken cancellationToken = default)
+    {
+        var products = await contentRetriever.RetrieveContentOfReusableSchemas<IProductFields>(
+            [IProductFields.REUSABLE_FIELD_SCHEMA_NAME],
+            new RetrieveContentOfReusableSchemasParameters
+            {
+                LinkedItemsMaxLevel = 1,
+                WorkspaceNames = [DancingGoatConstants.COMMERCE_WORKSPACE_NAME]
+            },
+            query => query.Where(where => where.WhereIn(nameof(IContentQueryDataContainer.ContentItemGUID), productGuids)),
+            new RetrievalCacheSettings($"WhereIn_{nameof(IContentQueryDataContainer.ContentItemGUID)}_{string.Join("_", productGuids)}"),
+            cancellationToken
+        );
+
+        return products;
+    }
+
+
+    /// <summary>
+    /// Retrieves products whose specified tag field contains any of the given tags.
+    /// </summary>
+    /// <param name="tagFieldName">Name of the product field holding the tags.</param>
+    /// <param name="tagCollection">Tags to filter by.</param>
+    /// <param name="includeSecuredItems">Indicates whether secured products are included.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Products whose <paramref name="tagFieldName"/> field contains any of the tags in <paramref name="tagCollection"/>.</returns>
+    public async Task<IEnumerable<IProductFields>> GetProductsByTags(string tagFieldName, TagCollection tagCollection, bool includeSecuredItems = false, CancellationToken cancellationToken = default)
+    {
+        var products = await contentRetriever.RetrieveContentOfReusableSchemas<IProductFields>(
+            [IProductFields.REUSABLE_FIELD_SCHEMA_NAME],
+            new RetrieveContentOfReusableSchemasParameters
+            {
+                LinkedItemsMaxLevel = 1,
+                WorkspaceNames = [DancingGoatConstants.COMMERCE_WORKSPACE_NAME],
+                IncludeSecuredItems = includeSecuredItems
+            },
+            query => query.Where(where => where.WhereContainsTags(tagFieldName, tagCollection)),
+            new RetrievalCacheSettings($"WhereContainsTags_{tagFieldName}_{string.Join("_", tagCollection.TagIdentifiers)}_{includeSecuredItems}"),
             cancellationToken
         );
 

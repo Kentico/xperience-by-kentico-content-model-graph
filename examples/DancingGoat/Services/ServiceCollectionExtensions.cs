@@ -20,9 +20,10 @@ namespace DancingGoat
         {
             AddViewComponentServices(services);
             AddCommerceServices(services);
+            AddSeoServices(services);
 
             services.AddSingleton<CurrentWebsiteChannelPrimaryLanguageRetriever>();
-            services.AddSingleton<TagTitleRetriever>();
+            services.AddSingleton<TagRetriever>();
             services.AddSingleton<WebPageUrlProvider>();
         }
 
@@ -44,8 +45,12 @@ namespace DancingGoat
             services.AddSingleton<ProductRepository>();
             services.AddSingleton<PaymentRepository>();
             services.AddSingleton<PromotionCouponRepository>();
+            services.AddSingleton<PromotionRepository>();
             services.AddSingleton<ShippingRepository>();
             services.AddTransient<UpsellOrderDiscountService>();
+            services.AddTransient<UpsellFreeShippingService>();
+            services.AddTransient<FreeShippingEligibilityService>();
+            services.AddTransient<ShippingMethodOptionsService>();
             services.AddTransient<IPriceFormatter, PriceFormatter>();
 
             // Register extractors for product types
@@ -65,6 +70,17 @@ namespace DancingGoat
         private static void AddViewComponentServices(IServiceCollection services)
         {
             services.AddSingleton<NavigationService>();
+        }
+
+
+        private static void AddSeoServices(IServiceCollection services)
+        {
+            services.AddSingleton<SeoMetadataService>();
+
+            services.AddSingleton<IJsonLdGenerator, ProductJsonLdGenerator>();
+            services.AddSingleton<IJsonLdGenerator, ArticleJsonLdGenerator>();
+            services.AddSingleton<IJsonLdGenerator, WebSiteJsonLdGenerator>();
+            services.AddSingleton<IJsonLdGenerator, BreadcrumbJsonLdGenerator>();
         }
     }
 }
