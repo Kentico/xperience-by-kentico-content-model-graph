@@ -52,9 +52,10 @@ Watch and see how you can use this library to explore the entire data model of y
 
 ## Requirements
 
-| Xperience version | Library version    |
-| ----------------- | ------------------ |
-| >= 31.9.2         | 2.0.0              |
+| Xperience version | Library version                             |
+| ----------------- | ------------------------------------------- |
+| >= 31.9.2         | 2.0.0                                       |
+| >= 31.7.3         | 1.1.0 (final release of the old package ID) |
 
 - .NET 10.0 or newer
 - Xperience by Kentico 31.9.2 or newer
