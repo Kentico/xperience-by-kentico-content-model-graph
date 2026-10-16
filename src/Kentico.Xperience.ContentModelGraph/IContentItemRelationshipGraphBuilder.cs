@@ -1,5 +1,6 @@
 namespace Kentico.Xperience.ContentModelGraph;
 
+[Obsolete(DeprecationMessages.PackageRenamed, DiagnosticId = DeprecationMessages.DiagnosticId, UrlFormat = DeprecationMessages.Url)]
 public interface IContentItemRelationshipGraphBuilder
 {
     public Task<ContentItemRelationshipGraph> Build(int itemId, int contentLanguageId);

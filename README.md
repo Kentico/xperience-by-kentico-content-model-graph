@@ -3,6 +3,9 @@
 [![Kentico Labs](https://img.shields.io/badge/Kentico_Labs-grey?labelColor=orange)](https://github.com/Kentico)
 [![CI](https://github.com/Kentico/xperience-by-kentico-content-model-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/Kentico/xperience-by-kentico-content-model-graph/actions/workflows/ci.yml)
 
+> [!WARNING]
+> Version 1.1.0 is the final release under the `Kentico.Xperience.ContentModelGraph` package ID. Future releases ship as `Kentico.Xperience.Labs.ContentModelGraph` with the `Kentico.Xperience.Labs.ContentModelGraph` namespace. Find outdated references with `dotnet list package --deprecated`.
+
 ## Description
 
 Content Model Graph adds an interactive application to the Xperience by Kentico administration. It visualizes relationships among:
@@ -54,7 +57,7 @@ Watch and see how you can use this library to explore the entire data model of y
 
 | Xperience version | Library version    |
 | ----------------- | ------------------ |
-| >= 31.7.3         | 1.0.0              |
+| >= 31.7.3         | 1.1.0 (final release of the old package ID) |
 
 - .NET 10.0 or newer
 - Xperience by Kentico 31.7.3 or newer
@@ -62,7 +65,7 @@ Watch and see how you can use this library to explore the entire data model of y
 ## Package Installation
 
 ```powershell
-dotnet add package Kentico.Xperience.ContentModelGraph --version 1.0.0
+dotnet add package Kentico.Xperience.ContentModelGraph --version 1.1.0
 ```
 
 ## Quick Start

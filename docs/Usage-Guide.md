@@ -1,11 +1,14 @@
 # Usage Guide
 
+> [!WARNING]
+> Version 1.1.0 is the final release under the `Kentico.Xperience.ContentModelGraph` package ID. Future releases ship as `Kentico.Xperience.Labs.ContentModelGraph` with the `Kentico.Xperience.Labs.ContentModelGraph` namespace. Find outdated references with `dotnet list package --deprecated`.
+
 ## Setup
 
 Add the package to the Xperience ASP.NET Core application:
 
 ```powershell
-dotnet add package Kentico.Xperience.ContentModelGraph --version 1.0.0-prerelease-1
+dotnet add package Kentico.Xperience.ContentModelGraph --version 1.1.0
 ```
 
 Register the library services in `Program.cs` before `builder.Build()`:
